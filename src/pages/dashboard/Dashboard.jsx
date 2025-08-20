@@ -29,6 +29,7 @@ import {
   IoPeopleOutline,
   IoDownloadOutline,
 } from "react-icons/io5";
+import Releasing from "./form/Releasing";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -193,7 +194,7 @@ const Dashboard = () => {
             </Tabs.Panel>
             <Tabs.Panel p="md" value="releasing">
               <div className="bg-gray-300 min-h-[80vh]">
-                Releasing tab content
+                <Releasing />
               </div>
             </Tabs.Panel>
           </Tabs>

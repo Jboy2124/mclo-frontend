@@ -60,7 +60,7 @@ export const transformAttachments = (attachments) => {
     ? attachments
         .split(";")
         .map((path) => path.replace(/\\/g, "/"))
-        .map((path) => path.replace("docs/JUL2025/", "")) // remove the prefix
+        .map((path) => path.replace("docs/uploads/", "")) // remove the prefix
     : [];
 
   return (

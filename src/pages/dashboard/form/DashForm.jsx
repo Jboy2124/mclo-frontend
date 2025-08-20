@@ -351,7 +351,7 @@ const DashForm = ({ data, loading }) => {
   }, [data, searchValue, findDocuments]);
 
   return (
-    <main>
+    <main className="border-2 border-gray-400 p-4 border-dashed rounded-2xl">
       <section className="p-5 min-h-[70vh]">
         <div className="">
           <TextInput

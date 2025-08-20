@@ -360,7 +360,11 @@ const Receiving = () => {
                               mt={1}
                               fs="italic"
                             >
-                              {filesAttached} file(s) attached
+                              {filesAttached === 0
+                                ? "No attachments"
+                                : `${filesAttached} PDF ${
+                                    filesAttached > 1 ? "files" : "file"
+                                  } attached`}
                             </Text>
                           </Flex>
                         </div>
