@@ -1,0 +1,16 @@
+@import "@mantine/core/styles.css";
+@import "@mantine/dates/styles.css";
+@import "@mantine/dropzone/styles.css";
+@import "tailwindcss";
+
+@theme {
+  /* --color-main: #4f6f52;
+   */
+  --color-main: #0e3557;
+
+  /* --color-secondary: #fffff0;
+   */
+  --color-secondary: #c1c6ca;
+
+  --color-text: #f5f2ec;
+}
