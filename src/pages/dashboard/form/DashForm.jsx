@@ -237,28 +237,15 @@ const DashForm = ({ data, loading }) => {
           hideLabel="Hide"
           styles={{
             control: {
-              fontSize: "13px", // smaller font
+              fontSize: "12px", // smaller font
               color: "blue", // optional custom color
             },
           }}
         >
-          {itm.description}
-        </Spoiler>
-        {/* <Text fz={14} fw={300}>
-          <Spoiler
-            maxHeight={45}
-            showLabel="More..."
-            hideLabel="Hide"
-            styles={{
-              control: {
-                fontSize: "13px", // smaller font
-                color: "blue", // optional custom color
-              },
-            }}
-          >
+          <Text fz={13} fw={300}>
             {itm.description}
-          </Spoiler>
-        </Text> */}
+          </Text>
+        </Spoiler>
         <Group gap="xs" justify="flex-start">
           <FiPaperclip size={16} className="text-gray-400" />
           {attachedFile}

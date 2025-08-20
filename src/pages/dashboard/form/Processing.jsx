@@ -38,20 +38,21 @@ import {
 import { useDebouncedState } from "@mantine/hooks";
 import { FiPaperclip } from "react-icons/fi";
 
-const Processing = ({ userList, userLoading }) => {
+const Processing = ({
+  data,
+  loadingProcess,
+  refetchDocuments,
+  userList,
+  userLoading,
+}) => {
   const [selectedDataRows, setSelectedDataRows] = useState([]);
   const [selectedAssigneeRows, setSelectedAssigneeRows] = useState([]);
   const [activePage, setActivePage] = useState(1);
   const [searchValue, setSearchValue] = useDebouncedState("", 500);
   const [documentList, setDocumentList] = useState([]);
+  const [totalRetrievedRecords, setTotalRetrievedRecords] = useState(1);
   const [addNewProcessingData, { isLoading }] =
     useAddNewProcessingDataMutation();
-  const {
-    data = [],
-    isLoading: loadingProcessingData,
-    isFetching: fetchingProcessingData,
-    refetch: refetchDocuments,
-  } = useGetProcessingDocumentListQuery({ activePage });
   const [
     findProcessingDocuments,
     { isLoading: findProcessingLoading, isFetching: findProcessingFetching },
@@ -75,8 +76,8 @@ const Processing = ({ userList, userLoading }) => {
   const titleList = useSelector((state) => state.commonCodes.titles);
   const designationList = useSelector((state) => state.commonCodes.designation);
 
-  const totalRecords = documentList?.totalRecords;
-  const pageLimit = 5;
+  const totalRecords = totalRetrievedRecords;
+  const pageLimit = 15;
   const totalPages = Math.ceil(totalRecords / pageLimit);
 
   const transformUserList = () => {
@@ -161,14 +162,15 @@ const Processing = ({ userList, userLoading }) => {
             hideLabel="Hide"
             styles={{
               control: {
-                fontSize: "13px", // smaller font
+                fontSize: "12px", // smaller font
                 color: "blue", // optional custom color
               },
             }}
           >
-            {element.description}
+            <Text fz={13} fw={300}>
+              {element.description}
+            </Text>
           </Spoiler>
-          {/* <FiPaperclip size={16} className="text-gray-400" /> */}
           <Group gap="xs" justify="flex-start">
             <FiPaperclip size={16} className="text-gray-400" />
             {transformAttachments(element.attachments)}
@@ -182,7 +184,12 @@ const Processing = ({ userList, userLoading }) => {
     return (
       <ScrollArea h={800} type="auto" offsetScrollbars="y">
         <LoadingOverlay
-          visible={loadingProcessingData | fetchingProcessingData | isLoading}
+          visible={
+            loadingProcess |
+            isLoading |
+            findProcessingLoading |
+            findProcessingFetching
+          }
           zIndex={1000}
           overlayProps={{ blur: 2, radius: "sm" }}
           loaderProps={{ color: "blue", type: "oval" }}
@@ -192,8 +199,6 @@ const Processing = ({ userList, userLoading }) => {
           withColumnBorders
           withTableBorder
           striped
-          // stripedColor="dimmed"
-          // className="bg-cyan-100"
           styles={{
             th: {
               background: "linear-gradient(90deg, #0e3557, #174a7e)",
@@ -302,7 +307,6 @@ const Processing = ({ userList, userLoading }) => {
       <Table.Td fw={30} fz={14}>
         {element.assignee}
       </Table.Td>
-      {/* <Table.Td>{element.designation}</Table.Td> */}
     </Table.Tr>
   ));
 
@@ -358,7 +362,6 @@ const Processing = ({ userList, userLoading }) => {
               </Table.Th>
               <Table.Th w={120}>Id</Table.Th>
               <Table.Th>Assignee</Table.Th>
-              {/* <Table.Th>Designation</Table.Th> */}
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>{assigneeRows}</Table.Tbody>
@@ -407,38 +410,37 @@ const Processing = ({ userList, userLoading }) => {
     description: searchValue,
   };
 
-  // useEffect(() => {
-  //   if (!searchValue && data) {
-  //     setDocumentList((prev) => {
-  //       // avoid resetting if same reference
-  //       if (prev === data) return prev;
-  //       return data;
-  //     });
-  //   }
-  // }, [data, searchValue]);
+  const handleNextPage = async (page) => {
+    setActivePage(page);
+    try {
+      const response = await findProcessingDocuments({
+        pageNumber: page,
+        data: constructPayload,
+      }).unwrap();
+      setDocumentList(response);
+    } catch (error) {}
+  };
 
-  // useEffect(() => {
-  //   const findProcessingDocumentsFn = async () => {
-  //     if (!searchValue) return;
+  useEffect(() => {
+    const searchProcessingDocuments = async () => {
+      const response = await findProcessingDocuments({
+        pageNumber: 1,
+        data: constructPayload,
+      }).unwrap();
 
-  //     try {
-  //       const response = await findProcessingDocuments({
-  //         pageNumber: activePage,
-  //         data: constructPayload,
-  //       }).unwrap();
+      setDocumentList(response);
+      setTotalRetrievedRecords(
+        response?.totalRecords === 0 ? 1 : response?.totalRecords
+      );
+    };
 
-  //       setDocumentList((prev) => {
-  //         // shallow equality check to prevent infinite updates
-  //         if (JSON.stringify(prev) === JSON.stringify(response)) return prev;
-  //         return response;
-  //       });
-  //     } catch (err) {
-  //       console.error("Search error:", err);
-  //     }
-  //   };
-
-  //   findProcessingDocumentsFn();
-  // }, [activePage, searchValue]);
+    if (searchValue !== "") {
+      searchProcessingDocuments();
+    } else {
+      setDocumentList(data);
+      setTotalRetrievedRecords(data?.totalRecords);
+    }
+  }, [data, searchValue]);
 
   return (
     <main className="p-5">
@@ -486,7 +488,7 @@ const Processing = ({ userList, userLoading }) => {
                     boundaries={1}
                     defaultValue={1}
                     value={activePage}
-                    onChange={setActivePage}
+                    onChange={handleNextPage}
                   />
                 </Group>
               </div>

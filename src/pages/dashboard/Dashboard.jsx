@@ -1,5 +1,5 @@
 import { Button, Divider, Tabs, Tooltip } from "@mantine/core";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Receiving from "./form/Receiving";
 import {
   useGetNatureOfCommunicationQuery,
@@ -23,9 +23,16 @@ import {
 } from "../../redux/reducer/commonCodeReducer";
 import DashForm from "./form/DashForm";
 import Processing from "./form/Processing";
+import {
+  IoDocumentTextOutline,
+  IoAddOutline,
+  IoPeopleOutline,
+  IoDownloadOutline,
+} from "react-icons/io5";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
+  const [disableReleasing, setDisableProcessing] = useState(false);
   const { data: titleList = [] } = useGetTitlesQuery();
   const { data: designationList = [] } = useGetDesignationQuery();
   const { data: natureOfCommunicationsList = [] } =
@@ -37,12 +44,12 @@ const Dashboard = () => {
     isFetching,
     refetch,
   } = useGetDocumentListQuery();
-  // const {
-  //   data: processingData = [],
-  //   isLoading: loadingProcessingData,
-  //   isFetching: fetchingProcessingData,
-  //   refetch: refetchProcessingData,
-  // } = useGetProcessingDocumentListQuery();
+  const {
+    data: processingData = [],
+    isLoading: loadingProcessingData,
+    isFetching: fetchingProcessingData,
+    refetch: refetchProcessingData,
+  } = useGetProcessingDocumentListQuery(1);
   const {
     data: activeUserList = [],
     isLoading: activeUsersLoading,
@@ -73,12 +80,14 @@ const Dashboard = () => {
             p={10}
             style={{ boxShadow: "inherit" }}
           >
-            <Tabs.List p={10} ta={"left"} justify="start">
+            <Tabs.List p={10} ta={"left"} justify="start" mx={5}>
               <Tabs.Tab
                 value="dashboard"
-                p="sm"
                 fw={500}
-                w={120}
+                w={140}
+                leftSection={
+                  <IoDocumentTextOutline size={20} strokeWidth={0.5} />
+                }
                 className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
                 onClick={refetch}
               >
@@ -86,45 +95,75 @@ const Dashboard = () => {
               </Tabs.Tab>
               <Tabs.Tab
                 value="receiving"
-                p="sm"
                 fw={500}
-                w={120}
+                w={140}
+                leftSection={<IoAddOutline size={20} strokeWidth={0.5} />}
                 className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
               >
                 Receiving
               </Tabs.Tab>
               <Tabs.Tab
                 value="processing"
-                p="sm"
                 fw={500}
-                w={120}
+                w={140}
+                leftSection={<IoPeopleOutline size={20} strokeWidth={0.5} />}
                 className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
                 onClick={() => {
+                  refetchProcessingData();
                   activeUserRefetch();
                 }}
               >
                 Processing
               </Tabs.Tab>
-              <Tooltip
-                multiline
-                w={220}
-                withArrow
-                arrowSize={12}
-                transitionProps={{ duration: 200 }}
-                label="You have no access on this function."
-                color="orange"
-              >
+              {disableReleasing && (
+                <Tooltip
+                  multiline
+                  w={220}
+                  withArrow
+                  arrowSize={12}
+                  transitionProps={{ duration: 200 }}
+                  label="You have no access on this function."
+                  color="orange"
+                >
+                  <Tabs.Tab
+                    value="releasing"
+                    fw={500}
+                    w={140}
+                    leftSection={
+                      <IoDownloadOutline size={20} strokeWidth={0.5} />
+                    }
+                    disabled={disableReleasing}
+                    className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
+                  >
+                    Releasing
+                  </Tabs.Tab>
+                </Tooltip>
+              )}
+              {!disableReleasing && (
                 <Tabs.Tab
                   value="releasing"
-                  p="sm"
                   fw={500}
-                  w={120}
-                  disabled
+                  w={140}
+                  leftSection={
+                    <IoDownloadOutline size={20} strokeWidth={0.5} />
+                  }
+                  disabled={disableReleasing}
                   className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
                 >
                   Releasing
                 </Tabs.Tab>
-              </Tooltip>
+              )}
+              <Tabs.Tab
+                value="settings"
+                fw={500}
+                w={140}
+                disabled
+                leftSection={<IoPeopleOutline size={20} strokeWidth={0.5} />}
+                className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
+                onClick={() => {}}
+              >
+                Settings
+              </Tabs.Tab>
             </Tabs.List>
             <Tabs.Panel p="md" value="dashboard">
               <div className="bg-gray-300 min-h-[80vh]">
@@ -142,6 +181,11 @@ const Dashboard = () => {
             <Tabs.Panel p="md" value="processing">
               <div className="bg-gray-300 min-h-[80vh]">
                 <Processing
+                  data={processingData}
+                  loadingProcess={
+                    loadingProcessingData | fetchingProcessingData
+                  }
+                  refetchDocuments={refetchProcessingData}
                   userList={activeUserList ?? []}
                   userLoading={activeUsersLoading | activeUsersFetching}
                 />

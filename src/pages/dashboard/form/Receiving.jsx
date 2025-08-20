@@ -30,6 +30,7 @@ import Swal from "sweetalert2";
 const Receiving = () => {
   const [files, setFiles] = useState([]);
   const [value, setValue] = useState(null);
+  const [filesAttached, setFilesAttached] = useState(0);
   const [timeValue, setTimeValue] = useState("");
   const [addNewReceivingData] = useAddNewReceivingDataMutation();
   const [getDocumentsCountPerType, { isLoading }] =
@@ -105,13 +106,15 @@ const Receiving = () => {
       return new File([file], newName, { type: file.type });
     });
 
-    setFiles((prev) => [...prev, ...renamed]);
+    setFiles((prev) => {
+      const updated = [...prev, ...renamed];
+      setFilesAttached(updated.length); // update file count
+      return updated;
+    });
   };
 
   const handleSubmit = async (data) => {
     try {
-      // const response = await addNewReceivingData(data);
-
       const formData = new FormData();
 
       // Append text fields
@@ -152,6 +155,7 @@ const Receiving = () => {
     submitForm.setFieldValue("natureOfComm", null);
     submitForm.setFieldValue("receivedThru", null);
     setFiles([]);
+    setFilesAttached(0);
     setValue(null);
     setTimeValue("");
   };
@@ -341,13 +345,24 @@ const Receiving = () => {
                           <BsFiletypePdf size={36} stroke={1} />
                         </Dropzone.Idle>
                         <div>
-                          <Text size="lg" inline>
-                            Drag PDF file here or click to select files
-                          </Text>
-                          <Text size="xs" c="dimmed" inline mt={7}>
-                            Attach as many files as you like, each file should
-                            not exceed 10mb
-                          </Text>
+                          <Flex direction="column" rowGap={5}>
+                            <Text size="lg" inline>
+                              Drag PDF file here or click to select files
+                            </Text>
+                            <Text size="xs" c="dimmed" inline mt={5}>
+                              Attach as many files as you like, each file should
+                              not exceed 10mb
+                            </Text>
+                            <Text
+                              size="xs"
+                              c="dimmed"
+                              inline
+                              mt={1}
+                              fs="italic"
+                            >
+                              {filesAttached} file(s) attached
+                            </Text>
+                          </Flex>
                         </div>
                       </Group>
                     </Dropzone>
@@ -373,9 +388,13 @@ const Receiving = () => {
                               </div>
                               <CloseButton
                                 onClick={() => {
-                                  setFiles((prevFiles) =>
-                                    prevFiles.filter((_, i) => i !== index)
-                                  );
+                                  setFiles((prevFiles) => {
+                                    const updated = prevFiles.filter(
+                                      (_, i) => i !== index
+                                    );
+                                    setFilesAttached(updated.length); // update file count
+                                    return updated;
+                                  });
                                 }}
                                 aria-label="Remove file"
                               />
