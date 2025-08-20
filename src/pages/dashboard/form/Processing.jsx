@@ -389,6 +389,7 @@ const Processing = ({
       }
       handleResetForm();
       await refetchDocuments();
+      handleNextPage(activePage);
       setActivePage(1);
     } catch (error) {
       Swal.fire({
