@@ -80,12 +80,12 @@ const DashForm = ({ data, loading }) => {
 
   const getBadgeColor = (status) => {
     if (status === "Receiving") {
-      return { color: "yellow", status: "Receiving" };
+      return { color: "yellow", status: "Received" };
     } else if (status === "Processing") {
-      return { color: "red", status: "Processing" };
+      return { color: "red", status: "Processed" };
     }
 
-    return { color: "blue", status: "Releasing" };
+    return { color: "blue", status: "Released" };
   };
 
   // const toggleDetails = (index) => {

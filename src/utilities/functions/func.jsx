@@ -11,14 +11,6 @@ export const getCommonCodeFieldValue = (arr, code) => {
 
 export const toggleLoading = (bool) => {
   if (bool) {
-    // <Box pos={"relative"}>
-    //   <LoadingOverlay
-    //     visible={bool}
-    //     zIndex={250}
-    //     overlayProps={{ radius: "sm", blur: 2 }}
-    //     loaderProps={{ color: "blue", type: "bars" }}
-    //   />
-    // </Box>;
     <LoadingOverlay
       visible={bool}
       zIndex={250}
