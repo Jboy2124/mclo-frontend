@@ -182,7 +182,7 @@ const Processing = ({
 
   const viewDataTable = () => {
     return (
-      <ScrollArea h={800} type="auto" offsetScrollbars="y">
+      <ScrollArea h={728} type="auto" offsetScrollbars="y">
         <LoadingOverlay
           visible={
             loadingProcess |
@@ -312,7 +312,7 @@ const Processing = ({
 
   const viewAssigneeTable = () => {
     return (
-      <ScrollArea h={570} type="auto" offsetScrollbars="y">
+      <ScrollArea h={500} type="auto" offsetScrollbars="y">
         <Table
           stickyHeader
           withColumnBorders
@@ -447,17 +447,12 @@ const Processing = ({
     <main className="p-5">
       <form onSubmit={submitForm.onSubmit(handleSubmitDocumentDetails)}>
         <section className="container mx-auto">
-          <div className="px-5 py-10">
-            <Title fw={500} c="#0e3557" order={2}>
-              Processing Section
-            </Title>
-          </div>
           <div className="flex flex-row justify-between items-start">
             <div className="w-full px-5">
               <Text pb={5} fz={15} fw={400}>
                 Documents
               </Text>
-              <div className="min-h-[80vh] border-2 border-gray-400 p-4 border-dashed rounded-2xl">
+              <div className="min-h-[10vh] border-2 border-gray-400 p-4 border-dashed rounded-2xl">
                 <div className="">
                   <TextInput
                     placeholder="Search document"
@@ -494,12 +489,12 @@ const Processing = ({
                 </Group>
               </div>
             </div>
-            <div className="w-[45rem] min-h-[50vh] px-5">
+            <div className="w-[45rem] min-h-[10vh] px-5">
               <Text pb={5} fz={15} fw={400}>
                 Assignee
               </Text>
               <div className="flex flex-col justify-start gap-3">
-                <div className="min-h-[69vh] border-2 border-gray-400 p-4 border-dashed rounded-2xl">
+                <div className="min-h-[19vh] border-2 border-gray-400 p-4 border-dashed rounded-2xl">
                   <div className="py-[26px]"></div>
                   {viewAssigneeTable()}
                 </div>
