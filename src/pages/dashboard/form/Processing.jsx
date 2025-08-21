@@ -84,6 +84,7 @@ const Processing = ({
     const data = userList?.result?.map((itm, index) => {
       return {
         id: itm.userId,
+        email: itm.email,
         assignee: `${getCommonCodeFieldValue(titleList, itm.title)} ${
           itm.fname
         } ${itm.lname}`,
@@ -372,9 +373,24 @@ const Processing = ({
 
   const handleSubmitDocumentDetails = async (data) => {
     try {
+      const assigneePayload = assigneeElements
+        .filter((el) => selectedAssigneeRows.includes(el.id))
+        .map((el) => ({
+          id: el.id,
+          email: el.email,
+          name: el.assignee,
+        }));
+
+      const documentsPayload = elements
+        .filter((el) => selectedDataRows.includes(el.code))
+        .map((el) => ({
+          code: el.code,
+          description: el.description,
+        }));
+
       const tranformPayload = {
-        code: selectedDataRows,
-        assignee: selectedAssigneeRows,
+        documents: documentsPayload,
+        assignee: assigneePayload,
         recommendation: data.recommendations,
         remarks: data.remarks,
       };

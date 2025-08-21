@@ -221,9 +221,7 @@ const Receiving = () => {
                                 })
                               }
                             >
-                              <div className="w-full px-2 py-1 text-[13px] hover:bg-gray-400 hover:text-white transition-all duration-200">
-                                {itm.value}
-                              </div>
+                              {itm.value}
                             </Menu.Item>
                           );
                         })}

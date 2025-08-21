@@ -29,6 +29,7 @@ import {
   IoPeopleOutline,
   IoDownloadOutline,
 } from "react-icons/io5";
+import { GoGear } from "react-icons/go";
 import Releasing from "./form/Releasing";
 
 const Dashboard = () => {
@@ -159,7 +160,7 @@ const Dashboard = () => {
                 fw={500}
                 w={140}
                 disabled
-                leftSection={<IoPeopleOutline size={20} strokeWidth={0.5} />}
+                leftSection={<GoGear size={20} strokeWidth={0.5} />}
                 className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
                 onClick={() => {}}
               >
@@ -167,7 +168,7 @@ const Dashboard = () => {
               </Tabs.Tab>
             </Tabs.List>
             <Tabs.Panel p="md" value="dashboard">
-              <div className="bg-gray-300 min-h-[80vh]">
+              <div className="bg-gray-300 min-h-[80vh] rounded-2xl">
                 <DashForm
                   data={documentList ?? []}
                   loading={isLoading | isFetching}
