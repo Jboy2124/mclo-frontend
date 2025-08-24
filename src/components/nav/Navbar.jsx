@@ -1,16 +1,25 @@
 import React, { useState } from "react";
+import { useLogoutAccountMutation } from "../../redux/endpoints/accountEndpoints";
 import { Avatar, Text, Indicator, Menu, Box } from "@mantine/core";
 import { IoMdNotifications, IoIosLogOut } from "react-icons/io";
 import { useDisclosure } from "@mantine/hooks";
 import { IoSettingsOutline } from "react-icons/io5";
 import { CiEdit } from "react-icons/ci";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { logoutUser } from "../../redux/reducer/authReducer";
 
 const Navbar = () => {
   const [showNotification, { setShowNotification }] = useDisclosure();
+  const [logoutAccount, { isLoading }] = useLogoutAccountMutation();
   const { fname, lname, email } = useSelector((state) => state?.auth?.authUser);
+  const dispatch = useDispatch();
 
   const profileMenu = () => {
+    const handleLogoutUser = async () => {
+      await logoutAccount();
+      dispatch(logoutUser());
+      localStorage.removeItem("persist:root");
+    };
     return (
       <Menu
         shadow="lg"
@@ -71,7 +80,12 @@ const Navbar = () => {
             Settings
           </Menu.Item>
           <Menu.Divider />
-          <Menu.Item fw={300} size={16} leftSection={<IoIosLogOut size={22} />}>
+          <Menu.Item
+            fw={300}
+            size={16}
+            leftSection={<IoIosLogOut size={22} />}
+            onClick={handleLogoutUser}
+          >
             Logout
           </Menu.Item>
         </Menu.Dropdown>

@@ -226,7 +226,7 @@ const DashForm = ({ data, loading }) => {
     const attachedFile = transformAttachments(itm.attachments);
     return [
       <div className="text-blue-700 hover:text-blue-500 hover:underline underline-offset-4 cursor-pointer">
-        <Text fz={15} fw={500}>
+        <Text fz={15} fw={500} py={20}>
           {itm.code_id}
         </Text>
       </div>,
@@ -353,7 +353,7 @@ const DashForm = ({ data, loading }) => {
   return (
     <main className="border-2 border-gray-400 p-4 border-dashed rounded-2xl">
       <section className="p-5 min-h-[70vh]">
-        <div className="">
+        <Flex direction="row" justify="space-between" pr={10}>
           <TextInput
             placeholder="Search document"
             mb="md"
@@ -371,7 +371,8 @@ const DashForm = ({ data, loading }) => {
               },
             }}
           />
-        </div>
+          <Text>Filter</Text>
+        </Flex>
         <ScrollArea h={"800"} type="auto" offsetScrollbars="y">
           <LoadingOverlay
             visible={loading | isLoading}

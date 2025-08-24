@@ -1,4 +1,4 @@
-import { configApi } from "../api/baseUrl";
+import { configApi } from "../api/configApi";
 
 const users = configApi.injectEndpoints({
   endpoints: (builder) => ({
