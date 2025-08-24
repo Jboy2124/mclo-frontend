@@ -195,7 +195,7 @@ const Receiving = () => {
   return (
     <main className="px-50">
       <form onSubmit={submitForm.onSubmit(handleSubmit)}>
-        <section className="container mx-auto bg-gray-300">
+        <section className="container mx-auto bg-gray-300 border-2 border-gray-400 p-4 border-dashed rounded-2xl">
           <div className="px-10 py-10">
             <Title fw={500} c="#0e3557" order={2}>
               Receiving Section

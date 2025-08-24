@@ -194,7 +194,7 @@ const Dashboard = () => {
               </div>
             </Tabs.Panel>
             <Tabs.Panel p="md" value="releasing">
-              <div className="bg-gray-300 min-h-[80vh]">
+              <div className="bg-gray-300 min-h-[80vh] rounded-2xl border-2 border-gray-400 p-4 border-dashed">
                 <Releasing />
               </div>
             </Tabs.Panel>
