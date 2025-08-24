@@ -23,7 +23,10 @@ import { isNullOrUndefinedOrEmpty } from "../../../utilities/utilities";
 import { BsFiletypePdf, BsFileEarmarkPdfFill } from "react-icons/bs";
 import SectionHeader from "../../../components/section/SectionHeader";
 import { useAddNewReceivingDataMutation } from "../../../redux/endpoints/documentsEndpoints";
-import { useGetDocumentsCountPerTypeMutation } from "../../../redux/endpoints/documentsEndpoints";
+import {
+  useGetDocumentsCountPerTypeMutation,
+  useFindDocumentsByCodeIdQuery,
+} from "../../../redux/endpoints/documentsEndpoints";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
 
@@ -32,10 +35,14 @@ const Receiving = () => {
   const [value, setValue] = useState(null);
   const [filesAttached, setFilesAttached] = useState(0);
   const [timeValue, setTimeValue] = useState("");
+  const [getCodeValue, setCodeValue] = useState("");
+  const [codeHasError, setCodeHasError] = useState(false);
+
   const [addNewReceivingData] = useAddNewReceivingDataMutation();
   const [getDocumentsCountPerType, { isLoading }] =
     useGetDocumentsCountPerTypeMutation();
-  const [getCodeValue, setCodeValue] = useState(true);
+  const { data: codeQueryResponse = [], isLoading: codeQueryLoading } =
+    useFindDocumentsByCodeIdQuery({ code: getCodeValue });
   const [natureCommSelectedValue, setNatureCommSelectedValue] = useState("");
   const [addNewCode, setAddNewCode] = useState("");
   const [selectedDocType, setSelectedDocType] = useState(null);
@@ -179,6 +186,7 @@ const Receiving = () => {
     const newGeneratedCode = `${prefix}-${docType}-${yearGenerated}-${formatDocumentCount(
       docCount
     )}`;
+
     setAddNewCode(newGeneratedCode);
     setSelectedDocType(id);
     submitForm.setFieldValue("code", newGeneratedCode);

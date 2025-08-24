@@ -53,6 +53,13 @@ const documents = configApi.injectEndpoints({
         body: data,
       }),
     }),
+    findDocumentsByCodeId: builder.query({
+      query: ({ code }) => ({
+        url: "/api/documents/v1/code-query",
+        method: "GET",
+        params: { code },
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -65,4 +72,5 @@ export const {
   useGetDocumentsCountPerTypeMutation,
   useAddNewProcessingDataMutation,
   useFindProcessingDocumentsMutation,
+  useFindDocumentsByCodeIdQuery,
 } = documents;
