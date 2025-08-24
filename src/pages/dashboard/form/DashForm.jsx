@@ -52,6 +52,7 @@ import {
   IconClipboardData,
   IconListTree,
   IconSearch,
+  IconFilter2Plus,
 } from "@tabler/icons-react";
 import { FiPaperclip } from "react-icons/fi";
 import dayjs from "dayjs";
@@ -70,6 +71,7 @@ const DashForm = ({ data, loading }) => {
   const [documentsData, setDocumentData] = useState([]);
   const [searchPage, setSearchPage] = useState(1);
   const [searchTotalpage, setSearchTotalPages] = useState(1);
+  const [viewFilterBtn, setViewFilterBtn] = useState(true);
 
   const [findDocuments, { isLoading }] = useFindDocumentsMutation();
 
@@ -371,7 +373,35 @@ const DashForm = ({ data, loading }) => {
               },
             }}
           />
-          <Text>Filter</Text>
+          <Button
+            ta="center"
+            fz={13}
+            fw={300}
+            variant="subtle"
+            leftSection={<IconFilter2Plus stroke={1} />}
+            onClick={() => {}} // 👈 toggle when clicked
+          >
+            Add filter
+          </Button>
+          {/* {viewFilterBtn ? (
+            <Button
+              ta="center"
+              fz={13}
+              fw={300}
+              variant="subtle"
+              leftSection={<IconFilter2Plus stroke={1} />}
+              onClick={() => setViewFilterBtn(false)} // 👈 toggle when clicked
+            >
+              Add filter
+            </Button>
+          ) : (
+            <MultiSelect
+              placeholder="Filter"
+              data={["date entry", "Status"]}
+              clearable
+              onClear={() => setViewFilterBtn(true)} // 👈 toggle back when cleared
+            />
+          )} */}
         </Flex>
         <ScrollArea h={"800"} type="auto" offsetScrollbars="y">
           <LoadingOverlay

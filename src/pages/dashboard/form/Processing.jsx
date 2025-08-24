@@ -34,6 +34,7 @@ import {
   IconClipboardData,
   IconListTree,
   IconSearch,
+  IconFilter2Plus,
 } from "@tabler/icons-react";
 import { useDebouncedState } from "@mantine/hooks";
 import { FiPaperclip } from "react-icons/fi";
@@ -469,7 +470,7 @@ const Processing = ({
                 Documents
               </Text>
               <div className="min-h-[10vh] border-2 border-gray-400 p-4 border-dashed rounded-2xl">
-                <div className="">
+                <Flex justify="space-between">
                   <TextInput
                     placeholder="Search document"
                     mb="md"
@@ -487,7 +488,17 @@ const Processing = ({
                       },
                     }}
                   />
-                </div>
+                  <Button
+                    ta="center"
+                    fz={13}
+                    fw={300}
+                    variant="subtle"
+                    leftSection={<IconFilter2Plus stroke={1} />}
+                    onClick={() => {}} // 👈 toggle when clicked
+                  >
+                    Add filter
+                  </Button>
+                </Flex>
                 {viewDataTable()}
                 <Group justify="flex-end" mt="lg" px={10} pt={4}>
                   <Pagination
