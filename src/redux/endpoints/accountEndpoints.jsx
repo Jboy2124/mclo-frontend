@@ -1,4 +1,4 @@
-import { configApi } from "../api/baseUrl";
+import { configApi } from "../api/configApi";
 
 const accounts = configApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -23,6 +23,12 @@ const accounts = configApi.injectEndpoints({
         body: data,
       }),
     }),
+    logoutAccount: builder.mutation({
+      query: () => ({
+        url: "/api/auth/v1/logout",
+        method: "POST",
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -31,4 +37,5 @@ export const {
   useRegisterUserMutation,
   useValidateEmailMutation,
   useLoginAccountMutation,
+  useLogoutAccountMutation,
 } = accounts;

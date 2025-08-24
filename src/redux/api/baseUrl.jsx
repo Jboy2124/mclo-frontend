@@ -1,9 +1,40 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { StatusCodes } from "http-status-codes";
+import { logoutUser } from "../reducer/authReducer";
 
-export const configApi = createApi({
-  reducerPath: "api",
-  baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080",
-  }),
-  endpoints: (builders) => ({}),
+const baseQuery = fetchBaseQuery({
+  baseUrl: "http://localhost:8080",
+  credentials: "include",
 });
+
+export const baseQueryWithReAuth = async (args, api, extraOptions) => {
+  let result = await baseQuery(args, api, extraOptions);
+
+  if (result.error && result.error.status === StatusCodes.UNAUTHORIZED) {
+    const refreshResult = await baseQuery(
+      {
+        url: "/api/auth/v1/refresh-token",
+        method: "POST",
+      },
+      api,
+      extraOptions
+    );
+
+    if (refreshResult?.data) {
+      result = await baseQuery(args, api, extraOptions);
+    } else {
+      await baseQuery(
+        {
+          url: "/api/auth/v1/logout",
+          method: "POST",
+        },
+        api,
+        extraOptions
+      );
+      api.dispatch(logoutUser());
+      localStorage.removeItem("persist:root");
+    }
+  }
+
+  return result;
+};

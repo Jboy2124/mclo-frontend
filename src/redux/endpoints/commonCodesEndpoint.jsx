@@ -1,4 +1,4 @@
-import { configApi } from "../api/baseUrl";
+import { configApi } from "../api/configApi";
 
 const commonCodeListEndpoints = configApi.injectEndpoints({
   endpoints: (builder) => ({

@@ -1,7 +1,7 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import { configApi } from "./api/baseUrl";
+import { configApi } from "./api/configApi";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import accountReducer from "./reducer/accountReducer";
 import commonCodeReducer from "./reducer/commonCodeReducer";
