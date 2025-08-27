@@ -32,12 +32,13 @@ const Login = () => {
         setLoading(true);
         const response = await loginAccount(data).unwrap();
         if (response?.status === "SUCCESS") {
-          const { fname, lname, email } = response?.result;
+          const { fname, lname, email, userId } = response?.result;
           dispatch(
             setAuthUser({
               fname: fname,
               lname: lname,
               email: email,
+              userId: userId,
             })
           );
           navigate(DASHBOARD_ROUTES.DASHBOARD);

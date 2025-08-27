@@ -41,8 +41,8 @@ const Receiving = () => {
   const [addNewReceivingData] = useAddNewReceivingDataMutation();
   const [getDocumentsCountPerType, { isLoading }] =
     useGetDocumentsCountPerTypeMutation();
-  const { data: codeQueryResponse = [], isLoading: codeQueryLoading } =
-    useFindDocumentsByCodeIdQuery({ code: getCodeValue });
+  // const { data: codeQueryResponse = [], isLoading: codeQueryLoading } =
+  //   useFindDocumentsByCodeIdQuery({ code: getCodeValue });
   const [natureCommSelectedValue, setNatureCommSelectedValue] = useState("");
   const [addNewCode, setAddNewCode] = useState("");
   const [selectedDocType, setSelectedDocType] = useState(null);

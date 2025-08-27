@@ -447,7 +447,7 @@ const DashForm = ({ data, loading }) => {
           <Pagination
             size="md"
             radius="md"
-            color="teal"
+            color="#0e3557"
             withControls
             withEdges
             total={totalPages}

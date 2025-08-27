@@ -11,9 +11,10 @@ import {
 import {
   useGetDocumentListQuery,
   useGetProcessingDocumentListQuery,
+  useGetForReleasingDocumentsQuery,
 } from "../../redux/endpoints/documentsEndpoints";
 import { useGetActiveUserListQuery } from "../../redux/endpoints/usersEndpoints";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   setNatureOfCommunication,
   setReceivedThrough,
@@ -34,7 +35,9 @@ import Releasing from "./form/Releasing";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
+  const userId = useSelector((state) => state.auth.authUser.userId);
   const [disableReleasing, setDisableProcessing] = useState(false);
+  const [filteredReleasedData, setFilteredReleasedData] = useState([]);
   const { data: titleList = [] } = useGetTitlesQuery();
   const { data: designationList = [] } = useGetDesignationQuery();
   const { data: natureOfCommunicationsList = [] } =
@@ -61,6 +64,18 @@ const Dashboard = () => {
     status: "active",
   });
   const { data: documentTypes = [] } = useGetDocumentTypeQuery();
+  const {
+    data: releasingData = [],
+    isLoading: releasedLoading,
+    isFetching: releasedFetching,
+    refetch: releasedRefetch,
+  } = useGetForReleasingDocumentsQuery({ activePage: 1, userId });
+
+  const handleFilterReleasedData = () => {
+    const getUser = releasingData?.result?.map((user) =>
+      userId.contains(user.assignee)
+    );
+  };
 
   dispatch(setNatureOfCommunication(natureOfCommunicationsList));
   dispatch(setReceivedThrough(receivedThruList));
@@ -136,6 +151,7 @@ const Dashboard = () => {
                     }
                     disabled={disableReleasing}
                     className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
+                    onClick={releasedRefetch}
                   >
                     Releasing
                   </Tabs.Tab>
@@ -151,6 +167,7 @@ const Dashboard = () => {
                   }
                   disabled={disableReleasing}
                   className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
+                  onClick={releasedRefetch}
                 >
                   Releasing
                 </Tabs.Tab>
@@ -195,7 +212,11 @@ const Dashboard = () => {
             </Tabs.Panel>
             <Tabs.Panel p="md" value="releasing">
               <div className="bg-gray-300 min-h-[80vh] rounded-2xl border-2 border-gray-400 p-4 border-dashed">
-                <Releasing />
+                <Releasing
+                  releasingData={releasingData}
+                  isLoading={releasedLoading | releasedFetching}
+                  refetch={releasedRefetch}
+                />
               </div>
             </Tabs.Panel>
           </Tabs>
