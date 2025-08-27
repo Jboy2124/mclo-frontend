@@ -10,7 +10,7 @@ const baseQuery = fetchBaseQuery({
 export const baseQueryWithReAuth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === StatusCodes.UNAUTHORIZED) {
+  if (result.error && result.error.status === StatusCodes.FORBIDDEN) {
     const refreshResult = await baseQuery(
       {
         url: "/api/auth/v1/refresh-token",

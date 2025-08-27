@@ -60,6 +60,16 @@ const documents = configApi.injectEndpoints({
         params: { code },
       }),
     }),
+    getForReleasingDocuments: builder.query({
+      query: ({ activePage, userId }) => ({
+        url: "/api/documents/v1/for-releasing-documents",
+        method: "GET",
+        params: {
+          user: userId,
+          page: activePage,
+        },
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -73,4 +83,5 @@ export const {
   useAddNewProcessingDataMutation,
   useFindProcessingDocumentsMutation,
   useFindDocumentsByCodeIdQuery,
+  useGetForReleasingDocumentsQuery,
 } = documents;

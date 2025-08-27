@@ -504,7 +504,7 @@ const Processing = ({
                   <Pagination
                     size="md"
                     radius="md"
-                    color="teal"
+                    color="#0e3557"
                     withControls
                     withEdges
                     total={totalPages}

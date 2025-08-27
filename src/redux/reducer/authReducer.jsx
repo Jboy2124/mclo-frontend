@@ -5,6 +5,7 @@ const authInitialState = {
     fname: "",
     lname: "",
     email: "",
+    userId: "",
   },
 };
 
