@@ -6,12 +6,14 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import accountReducer from "./reducer/accountReducer";
 import commonCodeReducer from "./reducer/commonCodeReducer";
 import authReducer from "./reducer/authReducer";
+import releaseReducer from "./reducer/releasingReducer";
 
 const rootReducer = combineReducers({
   [configApi.reducerPath]: configApi.reducer,
   account: accountReducer,
   commonCodes: commonCodeReducer,
   auth: authReducer,
+  releaseReducers: releaseReducer,
 });
 
 const persistConfig = {

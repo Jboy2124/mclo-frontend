@@ -70,6 +70,13 @@ const documents = configApi.injectEndpoints({
         },
       }),
     }),
+    addNewReleasedDocument: builder.mutation({
+      query: (data) => ({
+        url: "/api/documents/v1/add-new-released-document",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -84,4 +91,5 @@ export const {
   useFindProcessingDocumentsMutation,
   useFindDocumentsByCodeIdQuery,
   useGetForReleasingDocumentsQuery,
+  useAddNewReleasedDocumentMutation,
 } = documents;
