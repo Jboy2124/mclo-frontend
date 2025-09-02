@@ -22,6 +22,10 @@ const commonCodeInitialState = {
     value: "",
     shortcut: "",
   },
+  accessLevel: {
+    id: null,
+    value: "",
+  },
 };
 
 export const commonCodeSlice = createSlice({
@@ -58,6 +62,12 @@ export const commonCodeSlice = createSlice({
         ...action.payload,
       };
     },
+    setAccessLevel: (state, action) => {
+      state.accessLevel = {
+        ...state.accessLevel,
+        ...action.payload,
+      };
+    },
   },
 });
 
@@ -67,5 +77,6 @@ export const {
   setNatureOfCommunication,
   setReceivedThrough,
   setDocumentTypes,
+  setAccessLevel,
 } = commonCodeSlice.actions;
 export default commonCodeSlice.reducer;

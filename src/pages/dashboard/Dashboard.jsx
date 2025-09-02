@@ -7,6 +7,7 @@ import {
   useGetTitlesQuery,
   useGetDesignationQuery,
   useGetDocumentTypeQuery,
+  useGetAccessLevelQuery,
 } from "../../redux/endpoints/commonCodesEndpoint";
 import {
   useGetDocumentListQuery,
@@ -21,6 +22,7 @@ import {
   titles,
   designation,
   setDocumentTypes,
+  setAccessLevel,
 } from "../../redux/reducer/commonCodeReducer";
 import DashForm from "./form/DashForm";
 import Processing from "./form/Processing";
@@ -32,10 +34,15 @@ import {
 } from "react-icons/io5";
 import { GoGear } from "react-icons/go";
 import Releasing from "./form/Releasing";
+import { getCommonCodeFieldValue } from "../../utilities/functions/func";
+import ProcessingLawyers from "./form/ProcessingLawyers";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-  const userId = useSelector((state) => state.auth.authUser.userId);
+  const auth = useSelector((state) => state?.auth?.authUser);
+  const userId = auth?.userId;
+  const userAccessLevel = auth?.accessLevel;
+
   const [disableReleasing, setDisableProcessing] = useState(false);
   const [filteredReleasedData, setFilteredReleasedData] = useState([]);
   const { data: titleList = [] } = useGetTitlesQuery();
@@ -70,6 +77,7 @@ const Dashboard = () => {
     isFetching: releasedFetching,
     refetch: releasedRefetch,
   } = useGetForReleasingDocumentsQuery({ activePage: 1, userId });
+  const { data: accessLevelList = [] } = useGetAccessLevelQuery();
 
   const handleFilterReleasedData = () => {
     const getUser = releasingData?.result?.map((user) =>
@@ -82,6 +90,18 @@ const Dashboard = () => {
   dispatch(titles(titleList));
   dispatch(designation(designationList));
   dispatch(setDocumentTypes(documentTypes));
+  dispatch(setAccessLevel(accessLevelList));
+
+  const validateAccess = (value) => {
+    const currentModules = getCommonCodeFieldValue(
+      accessLevelList?.result,
+      userAccessLevel
+    );
+    const arrModules = currentModules
+      .split(",")
+      .map((item) => item.trim().toLowerCase());
+    return arrModules || [];
+  };
 
   return (
     <main className="bg-secondary">
@@ -89,7 +109,7 @@ const Dashboard = () => {
         <div className="min-h-[90vh] bg-white rounded-2xl shadow-xl justify-center items-center">
           <Tabs
             variant="pills"
-            defaultValue="dashboard"
+            defaultValue="documents"
             orientation="horizontal"
             color="#0e3557"
             radius="xl"
@@ -99,7 +119,7 @@ const Dashboard = () => {
           >
             <Tabs.List p={10} ta={"left"} justify="start" mx={5}>
               <Tabs.Tab
-                value="dashboard"
+                value="documents"
                 fw={500}
                 w={140}
                 leftSection={
@@ -107,6 +127,7 @@ const Dashboard = () => {
                 }
                 className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
                 onClick={refetch}
+                hidden={!validateAccess().includes("documents")}
               >
                 Documents
               </Tabs.Tab>
@@ -116,6 +137,7 @@ const Dashboard = () => {
                 w={140}
                 leftSection={<IoAddOutline size={20} strokeWidth={0.5} />}
                 className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
+                hidden={!validateAccess().includes("receiving")}
               >
                 Receiving
               </Tabs.Tab>
@@ -129,62 +151,48 @@ const Dashboard = () => {
                   refetchProcessingData();
                   activeUserRefetch();
                 }}
+                hidden={!validateAccess().includes("processing")}
               >
                 Processing
               </Tabs.Tab>
-              {disableReleasing && (
-                <Tooltip
-                  multiline
-                  w={220}
-                  withArrow
-                  arrowSize={12}
-                  transitionProps={{ duration: 200 }}
-                  label="You have no access on this function."
-                  color="orange"
-                >
-                  <Tabs.Tab
-                    value="releasing"
-                    fw={500}
-                    w={140}
-                    leftSection={
-                      <IoDownloadOutline size={20} strokeWidth={0.5} />
-                    }
-                    disabled={disableReleasing}
-                    className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
-                    onClick={releasedRefetch}
-                  >
-                    Releasing
-                  </Tabs.Tab>
-                </Tooltip>
-              )}
-              {!disableReleasing && (
-                <Tabs.Tab
-                  value="releasing"
-                  fw={500}
-                  w={140}
-                  leftSection={
-                    <IoDownloadOutline size={20} strokeWidth={0.5} />
-                  }
-                  disabled={disableReleasing}
-                  className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
-                  onClick={releasedRefetch}
-                >
-                  Releasing
-                </Tabs.Tab>
-              )}
+              <Tabs.Tab
+                value="lawyers"
+                fw={500}
+                w={140}
+                leftSection={<IoPeopleOutline size={20} strokeWidth={0.5} />}
+                className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
+                onClick={() => {
+                  refetchProcessingData();
+                  activeUserRefetch();
+                }}
+                hidden={!validateAccess().includes("lawyers")}
+              >
+                Processing
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="releasing"
+                fw={500}
+                w={140}
+                leftSection={<IoDownloadOutline size={20} strokeWidth={0.5} />}
+                className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
+                onClick={releasedRefetch}
+                hidden={!validateAccess().includes("releasing")}
+              >
+                Releasing
+              </Tabs.Tab>
               <Tabs.Tab
                 value="settings"
                 fw={500}
                 w={140}
-                disabled
                 leftSection={<GoGear size={20} strokeWidth={0.5} />}
                 className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
                 onClick={() => {}}
+                hidden={!validateAccess().includes("settings")}
               >
                 Settings
               </Tabs.Tab>
             </Tabs.List>
-            <Tabs.Panel p="md" value="dashboard">
+            <Tabs.Panel p="md" value="documents">
               <div className="bg-gray-300 min-h-[80vh] rounded-2xl">
                 <DashForm
                   data={documentList ?? []}
@@ -208,6 +216,11 @@ const Dashboard = () => {
                   userList={activeUserList ?? []}
                   userLoading={activeUsersLoading | activeUsersFetching}
                 />
+              </div>
+            </Tabs.Panel>
+            <Tabs.Panel p="md" value="lawyers">
+              <div className="bg-gray-300 min-h-[80vh]">
+                <ProcessingLawyers />
               </div>
             </Tabs.Panel>
             <Tabs.Panel p="md" value="releasing">

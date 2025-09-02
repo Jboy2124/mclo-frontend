@@ -12,11 +12,13 @@ import {
   Flex,
   Spoiler,
   LoadingOverlay,
+  Badge,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import React, { useEffect, useState } from "react";
 import {
   getCommonCodeFieldValue,
+  getProcessingBadgeColor,
   transformAttachments,
 } from "../../../utilities/functions/func";
 import { useSelector } from "react-redux";
@@ -101,6 +103,7 @@ const Processing = ({
       code: itm.code,
       description: itm.description,
       attachments: itm.attachments,
+      status: itm.status,
     }));
   };
 
@@ -118,7 +121,7 @@ const Processing = ({
     setSelectedDataRows(
       checked
         ? [...selectedDataRows, code]
-        : selectedDataRows.filter((id) => id !== code)
+        : selectedDataRows.filter((rowId) => rowId !== code)
     );
   };
 
@@ -179,6 +182,29 @@ const Processing = ({
           </Group>
         </Flex>
       </Table.Td>
+      <Table.Td fw={300} fz={12}>
+        <Flex justify="center" align="center" direction="row" gap="xs">
+          <Badge
+            size="sm"
+            miw={80}
+            fw={300}
+            fz={8}
+            variant="filled"
+            color={getProcessingBadgeColor(element.status)}
+          >
+            {element.status}
+          </Badge>
+        </Flex>
+      </Table.Td>
+      <Table.Td fw={300} fz={14}>
+        <Flex justify="center" align="center" direction="row" gap="xs">
+          {element.status === "Pending approval" && (
+            <Button variant="light" fw={300} size="xs">
+              Approve
+            </Button>
+          )}
+        </Flex>
+      </Table.Td>
     </Table.Tr>
   ));
 
@@ -220,7 +246,7 @@ const Processing = ({
         >
           <Table.Thead className="bg-blue-400">
             <Table.Tr>
-              <Table.Th w={20} py={20}>
+              <Table.Th w={14} py={20}>
                 <Checkbox
                   aria-label="Select all rows"
                   variant="outline"
@@ -245,6 +271,8 @@ const Processing = ({
               </Table.Th>
               <Table.Th w={160}>Coding System</Table.Th>
               <Table.Th>Title/Designation</Table.Th>
+              <Table.Th w={120}>Status</Table.Th>
+              <Table.Th w={80}>Action</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>{dataRows}</Table.Tbody>
@@ -268,7 +296,7 @@ const Processing = ({
   const toggleAssigneeRow = (id, checked) => {
     const selectedAssignee = checked
       ? [...selectedAssigneeRows, id]
-      : selectedAssigneeRows.filter((id) => id !== id);
+      : selectedAssigneeRows.filter((rowId) => rowId !== id);
     setSelectedAssigneeRows(selectedAssignee);
   };
 
@@ -362,7 +390,7 @@ const Processing = ({
                   }}
                 />
               </Table.Th>
-              <Table.Th w={120}>Id</Table.Th>
+              <Table.Th w={100}>Id</Table.Th>
               <Table.Th>Assignee</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -461,11 +489,11 @@ const Processing = ({
   }, [data, searchValue]);
 
   return (
-    <main className="p-5">
+    <main className="py-5">
       <form onSubmit={submitForm.onSubmit(handleSubmitDocumentDetails)}>
         <section className="container mx-auto">
           <div className="flex flex-row justify-between items-start">
-            <div className="w-full px-5">
+            <div className="w-full px-2">
               <Text pb={5} fz={15} fw={400}>
                 Documents
               </Text>
@@ -516,7 +544,7 @@ const Processing = ({
                 </Group>
               </div>
             </div>
-            <div className="w-[45rem] min-h-[10vh] px-5">
+            <div className="w-[35rem] min-h-[10vh] px-2">
               <Text pb={5} fz={15} fw={400}>
                 Assignee
               </Text>

@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 
 const useAuth = () => {
-  const user = useSelector((state) => state.auth.authUser.fname);
+  const user = useSelector((state) => state.auth.authUser.userId);
   return { isAuthenticated: !!user };
 };
 

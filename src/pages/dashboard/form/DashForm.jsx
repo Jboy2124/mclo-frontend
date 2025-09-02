@@ -260,6 +260,9 @@ const DashForm = ({ data, loading }) => {
           ).color
         }
         fw={300}
+        fz={10}
+        size="sm"
+        miw={80}
       >
         {
           handleGetDocumentStatus(
@@ -308,7 +311,7 @@ const DashForm = ({ data, loading }) => {
         Code
       </Box>,
       <Box>Title/Designation/Description of documents</Box>,
-      <Box w={100}>Status</Box>,
+      <Box w={80}>Status</Box>,
       <Box w={100}>Date</Box>,
       <Box w={100}>Time</Box>,
       <Box w={50}>Action</Box>,
