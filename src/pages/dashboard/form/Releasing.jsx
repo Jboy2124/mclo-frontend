@@ -113,7 +113,12 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
     try {
       const isValid = validatePayload(payloadData);
       if (isValid) {
-        const response = await addNewReleasedDocument(payloadData).unwrap();
+        const formData = new FormData();
+        formData.append("payload", JSON.stringify(payloadData));
+        files.forEach((file) => {
+          formData.append("attachments", file);
+        });
+        const response = await addNewReleasedDocument(formData).unwrap();
         if (response.status !== "SUCCESS") {
           setNotifications({
             type: NOTIFICATION_TYPE.ERROR,
@@ -265,7 +270,6 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
                         className="text-red-400 cursor-pointer hover:text-red-500"
                         onClick={() => {
                           removeFile(index);
-                          clearFiles();
                         }}
                       />
                     </Flex>
@@ -293,7 +297,14 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
                   }
 
                   setNotifications(notificationInitialValue);
-                  setFiles(validFiles);
+                  const renamedFiles = validFiles.map((file, index) => {
+                    const newName =
+                      index === 0
+                        ? `${itm.codeId}-add-on.pdf`
+                        : `${itm.codeId}-add-on-${index}.pdf`;
+                    return new File([file], newName, { type: file.type });
+                  });
+                  setFiles(renamedFiles);
                 }}
                 accept="application/pdf"
                 multiple

@@ -6,6 +6,7 @@ const authInitialState = {
     lname: "",
     email: "",
     userId: "",
+    accessLevel: null,
   },
 };
 

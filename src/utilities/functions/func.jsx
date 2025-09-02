@@ -38,7 +38,7 @@ export const getDocumentStatus = (data, code) => {
     };
   }
   // Next priority: Processing
-  else if (processing && processing.processStatus !== "Unassigned") {
+  else if (processing && processing.processStatus !== "Open") {
     docStatus = {
       active: 2,
       label: "Processing",
@@ -78,4 +78,23 @@ export const transformAttachments = (attachments) => {
       ))}
     </Group>
   );
+};
+
+export const getProcessingBadgeColor = (status) => {
+  let selectedColor;
+  switch (status) {
+    case "Open":
+      selectedColor = "orange";
+      break;
+    case "Pending approval":
+      selectedColor = "green";
+      break;
+    case "Assigned":
+      selectedColor = "blue";
+      break;
+    default:
+      selectedColor = "red";
+      break;
+  }
+  return selectedColor;
 };

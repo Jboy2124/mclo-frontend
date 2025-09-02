@@ -25,6 +25,13 @@ const commonCodeListEndpoints = configApi.injectEndpoints({
       }),
       providesTags: ["DOCUMENTTYPES"],
     }),
+    getAccessLevel: builder.query({
+      query: () => ({
+        url: "/api/common-codes/v1/access-level",
+        method: "GET",
+      }),
+      providesTags: ["ACCESSLEVEL"],
+    }),
   }),
   overrideExisting: true,
 });
@@ -35,4 +42,5 @@ export const {
   useGetNatureOfCommunicationQuery,
   useGetReceivedThruQuery,
   useGetDocumentTypeQuery,
+  useGetAccessLevelQuery,
 } = commonCodeListEndpoints;
