@@ -7,6 +7,8 @@ import accountReducer from "./reducer/accountReducer";
 import commonCodeReducer from "./reducer/commonCodeReducer";
 import authReducer from "./reducer/authReducer";
 import releaseReducer from "./reducer/releasingReducer";
+import userListReducer from "./reducer/usersReducers";
+import receivingReducer from "./reducer/receivingReducer";
 
 const rootReducer = combineReducers({
   [configApi.reducerPath]: configApi.reducer,
@@ -14,6 +16,8 @@ const rootReducer = combineReducers({
   commonCodes: commonCodeReducer,
   auth: authReducer,
   releaseReducers: releaseReducer,
+  userList: userListReducer,
+  receivingReducers: receivingReducer,
 });
 
 const persistConfig = {

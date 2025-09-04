@@ -13,6 +13,7 @@ import {
   useGetDocumentListQuery,
   useGetProcessingDocumentListQuery,
   useGetForReleasingDocumentsQuery,
+  useGetAssignedDocumentsQuery,
 } from "../../redux/endpoints/documentsEndpoints";
 import { useGetActiveUserListQuery } from "../../redux/endpoints/usersEndpoints";
 import { useDispatch, useSelector } from "react-redux";
@@ -36,6 +37,7 @@ import { GoGear } from "react-icons/go";
 import Releasing from "./form/Releasing";
 import { getCommonCodeFieldValue } from "../../utilities/functions/func";
 import ProcessingLawyers from "./form/ProcessingLawyers";
+import { setUserList } from "../../redux/reducer/usersReducers";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -78,6 +80,12 @@ const Dashboard = () => {
     refetch: releasedRefetch,
   } = useGetForReleasingDocumentsQuery({ activePage: 1, userId });
   const { data: accessLevelList = [] } = useGetAccessLevelQuery();
+  const {
+    data: assignedDocs = [],
+    isFetching: fetchingAssignedDocs,
+    isLoading: loadingAssignedDocs,
+    refetch: refetchAssignedDocs,
+  } = useGetAssignedDocumentsQuery({ data: userId, page: 1 });
 
   const handleFilterReleasedData = () => {
     const getUser = releasingData?.result?.map((user) =>
@@ -91,6 +99,7 @@ const Dashboard = () => {
   dispatch(designation(designationList));
   dispatch(setDocumentTypes(documentTypes));
   dispatch(setAccessLevel(accessLevelList));
+  dispatch(setUserList(activeUserList.result));
 
   const validateAccess = (value) => {
     const currentModules = getCommonCodeFieldValue(
@@ -162,8 +171,7 @@ const Dashboard = () => {
                 leftSection={<IoPeopleOutline size={20} strokeWidth={0.5} />}
                 className="hover:ring-1 ring-[#0e3557] transition-all duration-300"
                 onClick={() => {
-                  refetchProcessingData();
-                  activeUserRefetch();
+                  refetchAssignedDocs();
                 }}
                 hidden={!validateAccess().includes("lawyers")}
               >
@@ -219,8 +227,12 @@ const Dashboard = () => {
               </div>
             </Tabs.Panel>
             <Tabs.Panel p="md" value="lawyers">
-              <div className="bg-gray-300 min-h-[80vh]">
-                <ProcessingLawyers />
+              <div className="bg-gray-300 min-h-[80vh] rounded-2xl">
+                <ProcessingLawyers
+                  documentList={assignedDocs}
+                  isLoading={fetchingAssignedDocs | loadingAssignedDocs}
+                  refetch={refetchAssignedDocs}
+                />
               </div>
             </Tabs.Panel>
             <Tabs.Panel p="md" value="releasing">

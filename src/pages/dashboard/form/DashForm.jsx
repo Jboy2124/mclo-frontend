@@ -41,6 +41,7 @@ import { useSelector } from "react-redux";
 import {
   getCommonCodeFieldValue,
   getDocumentStatus,
+  getFullname,
   transformAttachments,
 } from "../../../utilities/functions/func";
 import { TbListDetails, TbListTree } from "react-icons/tb";
@@ -53,16 +54,19 @@ import {
   IconListTree,
   IconSearch,
   IconFilter2Plus,
+  IconChevronsUpRight,
 } from "@tabler/icons-react";
 import { FiPaperclip } from "react-icons/fi";
-import dayjs from "dayjs";
+import dayjs from "../../../utilities/hooks/dayjsRelativeTime";
 
 const DashForm = ({ data, loading }) => {
   const natureOfComms = useSelector(
     (state) => state.commonCodes.natureOfCommunication
   );
-  const receivedThru = useSelector((state) => state.commonCodes.receivedThru);
+  const userList = useSelector((state) => state.userList.userProfile);
+  const titles = useSelector((state) => state.commonCodes.titles);
 
+  const receivedThru = useSelector((state) => state.commonCodes.receivedThru);
   const [expandedCards, setExpandedCards] = useState({});
   const [openModal, { open, close }] = useDisclosure(false);
   const [searchValue, setSearchValue] = useDebouncedState("", 500);
@@ -72,10 +76,9 @@ const DashForm = ({ data, loading }) => {
   const [searchPage, setSearchPage] = useState(1);
   const [searchTotalpage, setSearchTotalPages] = useState(1);
   const [viewFilterBtn, setViewFilterBtn] = useState(true);
+  const [selectedMenu, setSelectedMenu] = useState({ type: null, code: null });
 
   const [findDocuments, { isLoading }] = useFindDocumentsMutation();
-
-  const spoilerMaxHeight = 40;
 
   const pageLimit = 15;
   const totalPages = Math.ceil(searchTotalpage / pageLimit);
@@ -90,127 +93,164 @@ const DashForm = ({ data, loading }) => {
     return { color: "blue", status: "Released" };
   };
 
-  // const toggleDetails = (index) => {
-  //   setExpandedCards((prev) => ({
-  //     ...prev,
-  //     [index]: !prev[index],
-  //   }));
-  // };
+  const getAssignee = (assignee) => {
+    if (assignee) {
+      const assigneeArr = assignee.split(",").map((item) => item.trim());
+      return assigneeArr || [];
+    }
+  };
 
-  // const getDataTimeline = (selectedCode) => {
-  //   let activeBranch = 0;
-  //   const selectedData = data?.result?.filter(
-  //     (data) => data.code_id === selectedCode
-  //   );
+  const transformAssignee = (assignee) => {
+    const arr = getAssignee(assignee);
+    return userList
+      .filter((u) => arr.includes(u.userId))
+      .map((u) => (
+        <Group gap={0.5}>
+          <IconChevronsUpRight stroke={1} size={16} />
+          <Text fz={15} fw={500} key={u.userId}>
+            {getFullname(u, titles)}
+          </Text>
+        </Group>
+      ));
+  };
 
-  //   const receivingData = selectedData[0]?.receiving;
-  //   const processingData = selectedData[0]?.processing;
-  //   const releasingData = selectedData[0]?.releasing;
-  //   if (receivingData) {
-  //     activeBranch = 1;
-  //   } else if (processingData) {
-  //     activeBranch = 2;
-  //   } else if (releasingData) {
-  //     activeBranch = 3;
-  //   } else {
-  //     activeBranch = 0;
-  //   }
+  const transformReceiver = (received) => {
+    const arr = getAssignee(received);
+    return userList
+      .filter((u) => arr.includes(u.userId))
+      .map((u) => (
+        <Text fz={12} fw={300} key={u.userId}>
+          {`Document was received by ${getFullname(u, titles)}`}
+        </Text>
+      ));
+  };
 
-  //   if (selectedCode) {
-  //     return (
-  //       <Timeline active={activeBranch} bulletSize={18} lineWidth={1} pl={30}>
-  //         <Timeline.Item
-  //           bullet={activeBranch >= 1 ? () => {} : null}
-  //           title="Receiving"
-  //         >
-  //           <Text c="dimmed" size="sm">
-  //             {`New ${getCommonCodeFieldValue(
-  //               natureOfComms,
-  //               receivingData.natureOfComm
-  //             )} received, through ${getCommonCodeFieldValue(
-  //               receivedThru,
-  //               receivingData.receivedThru
-  //             )} forwarded/from ${receivingData?.forwardedBy || ""}.`}
-  //           </Text>
-  //           <Text size="xs" mt={4}>
-  //             {receivingData.receivedTime}
-  //           </Text>
-  //         </Timeline.Item>
+  const getDataTimeline = (selectedCode) => {
+    let activeBranch = 0;
+    const selectedData = data?.result?.filter(
+      (data) => data.code_id === selectedCode
+    );
 
-  //         <Timeline.Item
-  //           bullet={activeBranch >= 2 ? () => {} : null}
-  //           title="Processing"
-  //         >
-  //           <div className="pb-5">
-  //             <Text c="dimmed" size="sm">
-  //               You have pushed 23 commits to
-  //               <Text variant="link" component="span" inherit>
-  //                 fix-notifications branch
-  //               </Text>
-  //             </Text>
-  //             <Text size="xs" mt={4}>
-  //               52 minutes ago
-  //             </Text>
-  //           </div>
-  //           <div className="pb-5">
-  //             <Text c="dimmed" size="sm">
-  //               You have pushed 23 commits to
-  //               <Text variant="link" component="span" inherit>
-  //                 fix-notifications branch
-  //               </Text>
-  //             </Text>
-  //             <Text size="xs" mt={4}>
-  //               52 minutes ago
-  //             </Text>
-  //           </div>
-  //           <div className="pb-5">
-  //             <Text c="dimmed" size="sm">
-  //               You have pushed 23 commits to
-  //               <Text variant="link" component="span" inherit>
-  //                 fix-notifications branch
-  //               </Text>
-  //             </Text>
-  //             <Text size="xs" mt={4}>
-  //               52 minutes ago
-  //             </Text>
-  //           </div>
-  //         </Timeline.Item>
-  //         <Timeline.Item
-  //           title="For releasing"
-  //           bullet={activeBranch >= 3 ? () => {} : null}
-  //           // bullet={<IconGitPullRequest size={12} />}
-  //           lineVariant="dashed"
-  //         >
-  //           <Text c="dimmed" size="sm">
-  //             You have submitted a pull request
-  //             <Text variant="link" component="span" inherit>
-  //               Fix incorrect notification message (#187)
-  //             </Text>
-  //           </Text>
-  //           <Text size="xs" mt={4}>
-  //             34 minutes ago
-  //           </Text>
-  //         </Timeline.Item>
+    const receivingData = selectedData[0]?.receiving;
+    const processingData = selectedData[0]?.processing;
+    const releasingData = selectedData[0]?.releasing;
 
-  //         <Timeline.Item
-  //           title="Completed"
-  //           // bullet={() => {}}
-  //           // bullet={<IconMessageDots size={12} />}
-  //         >
-  //           <Text c="dimmed" size="sm">
-  //             <Text variant="link" component="span" inherit>
-  //               Robert Gluesticker
-  //             </Text>
-  //             left a code review on your pull request
-  //           </Text>
-  //           <Text size="xs" mt={4}>
-  //             12 minutes ago
-  //           </Text>
-  //         </Timeline.Item>
-  //       </Timeline>
-  //     );
-  //   }
-  // };
+    if (processingData && processingData.processStatus === "Assigned") {
+    }
+
+    if (releasingData && releasingData?.status === "For releasing") {
+      activeBranch = 3;
+    } else if (processingData && processingData.processStatus === "Assigned") {
+      activeBranch = 2;
+    } else if (receivingData && receivingData.status === "Received") {
+      activeBranch = 1;
+    } else {
+      activeBranch = 0;
+    }
+
+    if (selectedCode) {
+      return (
+        <Timeline
+          active={activeBranch}
+          bulletSize={18}
+          lineWidth={1}
+          pl={30}
+          color="#0e3557"
+        >
+          <Timeline.Item
+            bullet={activeBranch >= 1 ? () => {} : null}
+            title="Document Received"
+            c={activeBranch >= 1 ? "#0e3557" : "gray"}
+          >
+            <div className="pb-3">
+              <Text c={activeBranch >= 1 ? "#0e3557" : "gray"} size="sm" pb={3}>
+                {`New "${getCommonCodeFieldValue(
+                  natureOfComms,
+                  receivingData.natureOfComm
+                )}" received, through ${getCommonCodeFieldValue(
+                  receivedThru,
+                  receivingData.receivedThru
+                )} and forwarded by/from ${receivingData?.forwardedBy || ""}.`}
+              </Text>
+              {transformReceiver("MCLO20250001")}
+              <Text
+                size="xs"
+                mt={4}
+                pt={5}
+                c={activeBranch >= 1 ? "#0e3557" : "gray"}
+              >
+                {`${dayjs(
+                  `${dayjs(receivingData.receivedDate).format("YYYY-MM-DD")} ${
+                    receivingData.receivedTime
+                  }`,
+                  "YYYY-MM-DD HH:mm:ss"
+                ).fromNow()}`}
+              </Text>
+            </div>
+          </Timeline.Item>
+          <Timeline.Item
+            bullet={activeBranch >= 2 ? () => {} : null}
+            title={`Document ${processingData.processStatus}`}
+            c={activeBranch >= 2 ? "#0e3557" : "gray"}
+          >
+            {activeBranch >= 2 && (
+              <div className="pb-3">
+                <Text c="#0e3557" size="xs" mb={10} pb={10}>
+                  This document has been assigned to the following Lawyers or
+                  personnel:
+                </Text>
+                {transformAssignee(processingData?.assignedTo)}
+                <Text size="xs" mt={4} c="#0e3557" pt={10}>
+                  {dayjs(
+                    `${processingData.dateAssigned}`,
+                    "YYYY-MM-DD HH:mm:ss"
+                  ).fromNow()}
+                </Text>
+              </div>
+            )}
+          </Timeline.Item>
+          <Timeline.Item
+            title="Document for Release"
+            bullet={activeBranch >= 3 ? () => {} : null}
+            lineVariant="dashed"
+            c={activeBranch >= 3 ? "white" : "gray"}
+          >
+            {activeBranch >= 3 && (
+              <div className="pb-3">
+                <Text c="white" size="sm">
+                  You have submitted a pull request
+                  <Text variant="link" component="span" inherit>
+                    Fix incorrect notification message (#187)
+                  </Text>
+                </Text>
+                <Text size="xs" mt={4} c="yellow">
+                  34 minutes ago
+                </Text>
+              </div>
+            )}
+          </Timeline.Item>
+          <Timeline.Item
+            title="Completed"
+            c={releasingData?.status === "Released" ? "white" : "gray"}
+          >
+            {releasingData?.status === "Released" && (
+              <div className="pb-3">
+                <Text c="white" size="sm">
+                  <Text variant="link" component="span" inherit>
+                    Robert Gluesticker
+                  </Text>
+                  left a code review on your pull request
+                </Text>
+                <Text size="xs" mt={4} c="yellow">
+                  12 minutes ago
+                </Text>
+              </div>
+            )}
+          </Timeline.Item>
+        </Timeline>
+      );
+    }
+  };
 
   const handleGetDocumentStatus = (labelValue) => {
     return getBadgeColor(labelValue);
@@ -227,11 +267,9 @@ const DashForm = ({ data, loading }) => {
     );
     const attachedFile = transformAttachments(itm.attachments);
     return [
-      <div className="text-blue-700 hover:text-blue-500 hover:underline underline-offset-4 cursor-pointer">
-        <Text fz={15} fw={500} py={20}>
-          {itm.code_id}
-        </Text>
-      </div>,
+      <Text fz={15} fw={300} py={20}>
+        {itm.code_id}
+      </Text>,
       <Flex direction="column" gap={15}>
         <Spoiler
           maxHeight={45}
@@ -283,7 +321,7 @@ const DashForm = ({ data, loading }) => {
             <Menu.Item
               leftSection={<IconClipboardData size={20} stroke={1} />}
               onClick={() => {
-                console.log("code ", itm.code_id);
+                setSelectedMenu({ type: "details", code: itm.code_id });
                 open();
               }}
             >
@@ -293,6 +331,7 @@ const DashForm = ({ data, loading }) => {
               leftSection={<IconListTree size={20} stroke={1} />}
               onClick={() => {
                 console.log("code ", itm.code_id);
+                setSelectedMenu({ type: "timeline", code: itm.code_id });
                 open();
               }}
             >
@@ -462,8 +501,30 @@ const DashForm = ({ data, loading }) => {
         </Group>
       </section>
       <section>
-        <Modal opened={openModal} onClose={close} centered size={"70%"}>
-          asdasd
+        <Modal
+          size="xl"
+          opened={openModal}
+          onClose={close}
+          title={
+            <Flex direction="column" gap={0.5} justify="start" align="start">
+              <Text fz={15} fw={600}>
+                {selectedMenu?.type === "details"
+                  ? "Document Details"
+                  : "Document Timeline"}
+              </Text>
+              <Text fz={12} fw={500} fs="italic">
+                {selectedMenu.code}
+              </Text>
+            </Flex>
+          }
+          centered
+        >
+          <section className="bg-gray-400 p-10 rounded">
+            {selectedMenu?.type === "details" && <>{"Details here"}</>}
+            {selectedMenu?.type === "timeline" && (
+              <>{getDataTimeline(selectedMenu.code)}</>
+            )}
+          </section>
         </Modal>
       </section>
     </main>
