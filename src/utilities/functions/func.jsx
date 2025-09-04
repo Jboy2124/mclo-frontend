@@ -98,3 +98,21 @@ export const getProcessingBadgeColor = (status) => {
   }
   return selectedColor;
 };
+
+export const getFullname = (assignee, titleList) => {
+  let fullname = "";
+
+  const title =
+    assignee.title === 4
+      ? getCommonCodeFieldValue(titleList, assignee.title)
+      : "";
+
+  if (assignee) {
+    const fname = assignee.fname;
+    const lname = assignee.lname;
+
+    fullname = `${title} ${fname} ${lname}`;
+  }
+
+  return fullname;
+};

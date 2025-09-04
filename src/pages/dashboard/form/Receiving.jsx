@@ -18,7 +18,7 @@ import { useForm } from "@mantine/form";
 import { Dropzone, PDF_MIME_TYPE } from "@mantine/dropzone";
 import React, { useState } from "react";
 import { DateInput, TimeInput } from "@mantine/dates";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { isNullOrUndefinedOrEmpty } from "../../../utilities/utilities";
 import { BsFiletypePdf, BsFileEarmarkPdfFill } from "react-icons/bs";
 import SectionHeader from "../../../components/section/SectionHeader";
@@ -29,8 +29,11 @@ import {
 } from "../../../redux/endpoints/documentsEndpoints";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
+import { setReceivingPayload } from "../../../redux/reducer/receivingReducer";
+import { IconChevronsUpRight } from "@tabler/icons-react";
 
 const Receiving = () => {
+  const dispatch = useDispatch();
   const [files, setFiles] = useState([]);
   const [value, setValue] = useState(null);
   const [filesAttached, setFilesAttached] = useState(0);
@@ -96,6 +99,9 @@ const Receiving = () => {
   );
   const receivedThru = useSelector((state) => state?.commonCodes?.receivedThru);
   const docTypes = useSelector((state) => state?.commonCodes.documentTypes);
+  const receivingData = useSelector(
+    (state) => state?.receivingReducers?.receivingPayload
+  );
 
   const natureCommCodes = natureOfCommList?.result || [];
   const receivedThruCodes = receivedThru?.result || [];
@@ -212,7 +218,7 @@ const Receiving = () => {
               <div className="w-full">
                 <Flex gap={4}>
                   <div className="pt-[19px]">
-                    <Menu shadow="lg" width={200}>
+                    <Menu shadow="lg" width={300}>
                       <Menu.Target>
                         <Button color="#0e3557">+</Button>
                       </Menu.Target>
@@ -222,14 +228,25 @@ const Receiving = () => {
                           return (
                             <Menu.Item
                               key={index}
-                              onClick={() =>
+                              onClick={() => {
                                 handleCreateNewDocument({
                                   id: itm.id,
                                   keyValue: itm.shortcut,
-                                })
-                              }
+                                });
+                                dispatch(
+                                  setReceivingPayload({
+                                    natureOfCommId: itm.id,
+                                    natureOfComm: itm.value,
+                                  })
+                                );
+                              }}
                             >
-                              {itm.value}
+                              <Group gap={0.5}>
+                                <IconChevronsUpRight stroke={1} size={14} />
+                                <Text fz={13} fw={400} key={index + itm.id}>
+                                  {itm.value}
+                                </Text>
+                              </Group>
                             </Menu.Item>
                           );
                         })}
@@ -423,6 +440,21 @@ const Receiving = () => {
                     withAsterisk
                     key={submitForm.key("forwardedBy")}
                     {...submitForm.getInputProps("forwardedBy")}
+                    styles={{
+                      input: {
+                        borderColor: "#0e3557",
+                      },
+                    }}
+                  />
+                </div>
+                <div className="w-full pb-5">
+                  <TextInput
+                    labelProps={{ fw: 300 }}
+                    description="Sample"
+                    placeholder=""
+                    withAsterisk
+                    readOnly
+                    value={receivingData?.natureOfComm}
                     styles={{
                       input: {
                         borderColor: "#0e3557",

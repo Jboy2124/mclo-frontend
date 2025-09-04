@@ -109,12 +109,33 @@ const Processing = ({
 
   const elements = documentMetaData() || [];
   const allDataRowIds = elements.map((el) => el.code);
-  const allDataSelected = selectedDataRows.length === elements.length;
-  const partiallySelectedData =
-    selectedDataRows.length > 0 && selectedDataRows.length < elements.length;
+  // const allDataSelected = selectedDataRows.length === elements.length;
+  // const partiallySelectedData =
+  //   selectedDataRows.length > 0 && selectedDataRows.length < elements.length;
 
+  // const toggleSelectAllData = (checked) => {
+  //   setSelectedDataRows(checked ? allDataRowIds : []);
+  // };
+  const selectableIds = elements
+    .filter((el) => el.status !== "Assigned")
+    .map((el) => el.code);
+
+  // Correct states for the header checkbox
+  const allDataSelected =
+    selectableIds.length > 0 &&
+    selectedDataRows.length === selectableIds.length;
+
+  const partiallySelectedData =
+    selectedDataRows.length > 0 &&
+    selectedDataRows.length < selectableIds.length;
+
+  // Toggle handler
   const toggleSelectAllData = (checked) => {
-    setSelectedDataRows(checked ? allDataRowIds : []);
+    if (checked) {
+      setSelectedDataRows(selectableIds);
+    } else {
+      setSelectedDataRows([]);
+    }
   };
 
   const toggleRow = (code, checked) => {
@@ -136,6 +157,7 @@ const Processing = ({
     >
       <Table.Td>
         <Checkbox
+          hidden={element.status === "Assigned"}
           aria-label="Select row"
           variant="outline"
           checked={selectedDataRows.includes(element.code)}

@@ -77,6 +77,17 @@ const documents = configApi.injectEndpoints({
         body: data,
       }),
     }),
+    getAssignedDocuments: builder.query({
+      query: ({ data, page }) => ({
+        url: "/api/documents/v1/assigned-documents",
+        method: "GET",
+        params: {
+          assignee: data,
+          page: page,
+        },
+      }),
+      providesTags: ["ASSIGNED_DOCUMENTS"],
+    }),
   }),
   overrideExisting: true,
 });
@@ -92,4 +103,5 @@ export const {
   useFindDocumentsByCodeIdQuery,
   useGetForReleasingDocumentsQuery,
   useAddNewReleasedDocumentMutation,
+  useGetAssignedDocumentsQuery,
 } = documents;
