@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const releaseInitialState = {
   payloadObject: {
+    releaseId: "",
     docId: "",
     codeId: "",
     releasedDateTime: "",

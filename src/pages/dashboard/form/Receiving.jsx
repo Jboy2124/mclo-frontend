@@ -34,6 +34,7 @@ import { IconChevronsUpRight } from "@tabler/icons-react";
 
 const Receiving = () => {
   const dispatch = useDispatch();
+  const { userId } = useSelector((state) => state?.auth?.authUser);
   const [files, setFiles] = useState([]);
   const [value, setValue] = useState(null);
   const [filesAttached, setFilesAttached] = useState(0);
@@ -129,6 +130,8 @@ const Receiving = () => {
   const handleSubmit = async (data) => {
     try {
       const formData = new FormData();
+
+      formData.append("receivedBy", userId);
 
       // Append text fields
       Object.entries(data).forEach(([key, value]) => {
@@ -352,7 +355,7 @@ const Receiving = () => {
                     <Dropzone
                       onDrop={handleDrop}
                       accept={PDF_MIME_TYPE}
-                      maxSize={10 * 1024 ** 2} // 10 MB
+                      maxSize={120 * 1024 ** 2} // 100 MB
                       multiple
                       style={{
                         background: "#c1c6ca",
@@ -374,7 +377,7 @@ const Receiving = () => {
                             </Text>
                             <Text size="xs" c="dimmed" inline mt={5}>
                               Attach as many files as you like, each file should
-                              not exceed 10mb
+                              not exceed 120mb
                             </Text>
                             <Text
                               size="xs"

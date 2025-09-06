@@ -94,6 +94,21 @@ const documents = configApi.injectEndpoints({
         body: data,
       }),
     }),
+    getDocumentTimeline: builder.query({
+      query: ({ docId }) => ({
+        url: "/api/documents/v1/timeline",
+        method: "GET",
+        params: { docId },
+      }),
+      providesTags: ["TIMELINE"],
+    }),
+    updateReleaseDocument: builder.mutation({
+      query: (data) => ({
+        url: "/api/documents/v1/update-release-document",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -111,4 +126,6 @@ export const {
   useAddNewReleasedDocumentMutation,
   useGetAssignedDocumentsQuery,
   useUpdateProcessDocumentStatusMutation,
+  useGetDocumentTimelineQuery,
+  useUpdateReleaseDocumentMutation,
 } = documents;

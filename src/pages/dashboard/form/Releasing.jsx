@@ -17,7 +17,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import dayjs from "dayjs";
+import dayjs from "../../../utilities/hooks/dayjsRelativeTime";
 import React, { useState, useRef } from "react";
 import { FiPaperclip } from "react-icons/fi";
 import { transformAttachments } from "../../../utilities/functions/func";
@@ -35,7 +35,10 @@ import {
 } from "../constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setPayloadObject } from "../../../redux/reducer/releasingReducer";
-import { useAddNewReleasedDocumentMutation } from "../../../redux/endpoints/documentsEndpoints";
+import {
+  useAddNewReleasedDocumentMutation,
+  useUpdateReleaseDocumentMutation,
+} from "../../../redux/endpoints/documentsEndpoints";
 import { useDebouncedState } from "@mantine/hooks";
 
 const notificationInitialValue = {
@@ -58,6 +61,7 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
   const [searchValue, setSearchValue] = useDebouncedState("", 500);
   const resetRef = useRef(null);
   const [addNewReleasedDocument] = useAddNewReleasedDocumentMutation();
+  const [updateReleaseDocument] = useUpdateReleaseDocumentMutation();
 
   const payloadData = useSelector(
     (state) => state.releaseReducers.payloadObject
@@ -80,6 +84,7 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
     setMainNotifications(notificationInitialValue);
     dispatch(
       setPayloadObject({
+        releaseId: data.releaseId,
         codeId: data.codeId,
         docId: data.docId,
         liaison: "",
@@ -118,7 +123,8 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
         files.forEach((file) => {
           formData.append("attachments", file);
         });
-        const response = await addNewReleasedDocument(formData).unwrap();
+        const response = await updateReleaseDocument(payloadData).unwrap();
+        // const response = await addNewReleasedDocument(formData).unwrap();
         if (response.status !== "SUCCESS") {
           setNotifications({
             type: NOTIFICATION_TYPE.ERROR,
@@ -184,10 +190,22 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
       {
         label: (
           <Text fz={14} fw={400} className="min-h-6">
-            Release date
+            Approved date
           </Text>
         ),
-        value: itm.dateAssigned,
+        value: (
+          <Flex direction="row" gap="sm">
+            <Text fz={13} fw={300}>
+              {dayjs(itm.initialReleaseDate).format("MMM DD, YYYY HH:mm:ss")}
+            </Text>
+            <Text fz={12} fw={300}>
+              {dayjs(
+                `${itm?.initialReleaseDate}`,
+                "YYYY-MM-DD HH:mm:ss"
+              ).fromNow()}
+            </Text>
+          </Flex>
+        ),
       },
       {
         label: (
@@ -399,12 +417,12 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
           }}
         >
           <Text fz={13} fw={300}>
-            {document.description}
+            {document?.description}
           </Text>
         </Spoiler>
         <Group gap="xs" justify="flex-start">
           <FiPaperclip size={16} className="text-gray-400" />
-          {transformAttachments(document.attachment)}
+          {transformAttachments(document?.attachment)}
         </Group>
       </Flex>
     );
@@ -417,7 +435,7 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
         Code
       </Box>,
       <Box>Title/Designation/Description of documents</Box>,
-      <Box w={100}>Date assigned</Box>,
+      <Box w={100}>Approved date</Box>,
       <Box w={250}>Recommendations</Box>,
       <Box w={50}>Action</Box>,
     ],
@@ -443,7 +461,7 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
             handleRelease(doc);
           }}
         >
-          <Text c="white" fw={300} fz={13}>
+          <Text c="white" fw={300} fz={12}>
             Release
           </Text>
         </Button>
