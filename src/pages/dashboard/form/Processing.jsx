@@ -13,11 +13,15 @@ import {
   Spoiler,
   LoadingOverlay,
   Badge,
+  Tooltip,
+  HoverCard,
+  List,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import React, { useEffect, useState } from "react";
 import {
   getCommonCodeFieldValue,
+  getFullname,
   getProcessingBadgeColor,
   transformAttachments,
 } from "../../../utilities/functions/func";
@@ -27,19 +31,20 @@ import {
   useAddNewProcessingDataMutation,
   useFindProcessingDocumentsMutation,
   useGetProcessingDocumentListQuery,
+  useUpdateProcessDocumentStatusMutation,
 } from "../../../redux/endpoints/documentsEndpoints";
 import Swal from "sweetalert2";
 import {
-  IconDots,
-  IconEdit,
-  IconTrash,
-  IconClipboardData,
-  IconListTree,
   IconSearch,
   IconFilter2Plus,
+  IconChevronsUpRight,
 } from "@tabler/icons-react";
 import { useDebouncedState } from "@mantine/hooks";
 import { FiPaperclip } from "react-icons/fi";
+import { IoPeople } from "react-icons/io5";
+import { GiCheckMark } from "react-icons/gi";
+import { BiSolidCommentDetail } from "react-icons/bi";
+import dayjs from "../../../utilities/hooks/dayjsRelativeTime";
 
 const Processing = ({
   data,
@@ -60,6 +65,8 @@ const Processing = ({
     findProcessingDocuments,
     { isLoading: findProcessingLoading, isFetching: findProcessingFetching },
   ] = useFindProcessingDocumentsMutation();
+  const [updateProcessDocumentStatus, { isLoading: savingStatus }] =
+    useUpdateProcessDocumentStatusMutation();
   const formInitialValues = {
     recommendations: "",
     remarks: "",
@@ -76,12 +83,14 @@ const Processing = ({
     },
   });
 
+  const assigneeList = useSelector((state) => state.userList.userProfile);
   const titleList = useSelector((state) => state.commonCodes.titles);
   const designationList = useSelector((state) => state.commonCodes.designation);
 
   const totalRecords = totalRetrievedRecords;
   const pageLimit = 15;
   const totalPages = Math.ceil(totalRecords / pageLimit);
+  const excludedStatuses = ["Assigned", "In progress", "Pending approval"];
 
   const transformUserList = () => {
     const data = userList?.result?.map((itm, index) => {
@@ -98,26 +107,62 @@ const Processing = ({
     return data || [];
   };
 
+  const getAssignee = (assignee) => {
+    if (assignee) {
+      const assigneeArr = assignee.split(",").map((item) => item.trim());
+      return assigneeArr || [];
+    }
+  };
+
+  const transformAssignee = (assignee) => {
+    const arr = getAssignee(assignee);
+    return assigneeList
+      .filter((u) => arr.includes(u.userId))
+      .map((u) => (
+        <Group gap={0.5}>
+          <IconChevronsUpRight stroke={1} size={16} />
+          <Text fz={15} fw={500} key={u.userId}>
+            {getFullname(u, titleList)}
+          </Text>
+        </Group>
+      ));
+  };
+
+  const handleApproveDocument = async (processId, docId) => {
+    try {
+      const isValid = !isNullOrUndefinedOrEmpty(processId);
+      if (isValid) {
+        const response = await updateProcessDocumentStatus({
+          status: "Approved",
+          processId,
+          docId,
+        }).unwrap();
+        if (response.status === "SUCCESS") {
+          refetchDocuments();
+        }
+      }
+    } catch (error) {
+      console.error("Error: ", error.message);
+    }
+  };
+
   const documentMetaData = () => {
     return documentList?.result?.map((itm, index) => ({
+      processId: itm.processId,
+      docId: itm.docId,
       code: itm.code,
       description: itm.description,
       attachments: itm.attachments,
       status: itm.status,
+      assignedTo: itm.assignedTo,
+      dateAssigned: itm.dateAssigned,
     }));
   };
 
   const elements = documentMetaData() || [];
   const allDataRowIds = elements.map((el) => el.code);
-  // const allDataSelected = selectedDataRows.length === elements.length;
-  // const partiallySelectedData =
-  //   selectedDataRows.length > 0 && selectedDataRows.length < elements.length;
-
-  // const toggleSelectAllData = (checked) => {
-  //   setSelectedDataRows(checked ? allDataRowIds : []);
-  // };
   const selectableIds = elements
-    .filter((el) => el.status !== "Assigned")
+    .filter((el) => !excludedStatuses.includes(el.status))
     .map((el) => el.code);
 
   // Correct states for the header checkbox
@@ -157,7 +202,7 @@ const Processing = ({
     >
       <Table.Td>
         <Checkbox
-          hidden={element.status === "Assigned"}
+          hidden={excludedStatuses.includes(element.status)}
           aria-label="Select row"
           variant="outline"
           checked={selectedDataRows.includes(element.code)}
@@ -190,7 +235,7 @@ const Processing = ({
             styles={{
               control: {
                 fontSize: "12px", // smaller font
-                color: "blue", // optional custom color
+                color: "#3396D3", // optional custom color
               },
             }}
           >
@@ -198,17 +243,67 @@ const Processing = ({
               {element.description}
             </Text>
           </Spoiler>
-          <Group gap="xs" justify="flex-start">
-            <FiPaperclip size={16} className="text-gray-400" />
-            {transformAttachments(element.attachments)}
-          </Group>
+          <div className="flex flex-row justify-between">
+            <Group gap="xs" justify="flex-start">
+              <FiPaperclip size={16} className="text-gray-400" />
+              {transformAttachments(element.attachments)}
+            </Group>
+            <Group gap="xs" justify="flex-end" align="center">
+              <BiSolidCommentDetail
+                stroke={1}
+                size={18}
+                className="cursor-pointer text-orange-500 hover:text-orange-600 transition-all duration-300"
+              />
+              {[
+                "Assigned",
+                "Pending approval",
+                "Approved",
+                "In progress",
+              ].includes(element.status) && (
+                <HoverCard
+                  width={280}
+                  shadow="xl"
+                  withArrow
+                  openDelay={200}
+                  closeDelay={400}
+                  styles={{
+                    dropdown: { backgroundColor: "#9FB3DF" }, // amber-400 hex
+                    arrow: { backgroundColor: "#9FB3DF" },
+                  }}
+                >
+                  <HoverCard.Target>
+                    <IoPeople
+                      size={15}
+                      stroke={1}
+                      className="cursor-pointer text-orange-500 hover:text-orange-600 transition-all duration-300"
+                    />
+                  </HoverCard.Target>
+                  <HoverCard.Dropdown>
+                    <div className="pb-3">
+                      <Text c="#0e3557" size="xs" mb={10} pb={10}>
+                        This document has been assigned to the following Lawyers
+                        or personnel:
+                      </Text>
+                      {transformAssignee(element?.assignedTo)}
+                      <Text size="xs" mt={4} c="#0e3557" pt={10}>
+                        {`Assigned ${dayjs(
+                          `${element.dateAssigned}`,
+                          "YYYY-MM-DD HH:mm:ss"
+                        ).fromNow()}`}
+                      </Text>
+                    </div>
+                  </HoverCard.Dropdown>
+                </HoverCard>
+              )}
+            </Group>
+          </div>
         </Flex>
       </Table.Td>
       <Table.Td fw={300} fz={12}>
         <Flex justify="center" align="center" direction="row" gap="xs">
           <Badge
             size="sm"
-            miw={80}
+            miw={100}
             fw={300}
             fz={8}
             variant="filled"
@@ -221,8 +316,17 @@ const Processing = ({
       <Table.Td fw={300} fz={14}>
         <Flex justify="center" align="center" direction="row" gap="xs">
           {element.status === "Pending approval" && (
-            <Button variant="light" fw={300} size="xs">
-              Approve
+            <Button
+              fw={300}
+              size="xs"
+              color="#0e3557"
+              variant="filled"
+              radius="sm"
+              onClick={() =>
+                handleApproveDocument(element.processId, element.docId)
+              }
+            >
+              <GiCheckMark stroke={1} size={12} className="text-green-500" />
             </Button>
           )}
         </Flex>
@@ -238,7 +342,8 @@ const Processing = ({
             loadingProcess |
             isLoading |
             findProcessingLoading |
-            findProcessingFetching
+            findProcessingFetching |
+            savingStatus
           }
           zIndex={1000}
           overlayProps={{ blur: 2, radius: "sm" }}

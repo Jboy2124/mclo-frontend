@@ -171,7 +171,7 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
             styles={{
               control: {
                 fontSize: "12px", // smaller font
-                color: "blue", // optional custom color
+                color: "#3396D3", // optional custom color
               },
             }}
           >
@@ -418,16 +418,20 @@ const Releasing = ({ releasingData, isLoading, refetch }) => {
       </Box>,
       <Box>Title/Designation/Description of documents</Box>,
       <Box w={100}>Date assigned</Box>,
-      <Box w={100}>Recommendations</Box>,
-      <Box w={50}>Remarks</Box>,
+      <Box w={250}>Recommendations</Box>,
       <Box w={50}>Action</Box>,
     ],
     body: releasingData?.result?.map((doc) => [
-      doc.codeId,
+      <Text fz={14} fw={300}>
+        {doc.codeId}
+      </Text>,
       descriptionData(doc),
-      dayjs(doc.dateAssigned).format("MMM DD, YYYY"), // format date
-      doc.recommendations || "-",
-      doc.remarks || "-",
+      <Text fz={13} fw={300}>
+        {dayjs(doc.dateAssigned).format("MMM DD, YYYY")}
+      </Text>, // format date
+      <Text fz={13} fw={300}>
+        {doc.recommendations || "-"}
+      </Text>,
       <Flex miw={50} align="center">
         <Button
           size="xs"

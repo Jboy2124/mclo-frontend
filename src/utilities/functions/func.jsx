@@ -25,30 +25,41 @@ export const getDocumentStatus = (data, code) => {
     active: 0,
     label: "Unknown",
   };
+  const releaseStatuses = ["For releasing", "Released"];
+  const processingStatuses = [
+    "Open",
+    "In progress",
+    "Pending approval",
+    "Approved",
+    "Assigned",
+  ];
   const selectedData = data?.filter((data) => data.code_id === code);
   const receiving = selectedData[0]?.receiving;
   const processing = selectedData[0]?.processing;
   const releasing = selectedData[0]?.releasing;
 
   // Highest priority: Releasing
-  if (releasing && releasing.releasingStatus === "For releasing") {
+  if (releasing && releaseStatuses.includes(releasing.releaseStatus)) {
     docStatus = {
       active: 3,
-      label: "Releasing",
+      label: releasing.releaseStatus,
     };
   }
   // Next priority: Processing
-  else if (processing && processing.processStatus !== "Open") {
+  else if (
+    processing &&
+    processingStatuses.includes(processing.processStatus)
+  ) {
     docStatus = {
       active: 2,
-      label: "Processing",
+      label: processing.processStatus,
     };
   }
   // Lowest priority: Receiving
   else if (receiving && receiving.status === "Received") {
     docStatus = {
       active: 1,
-      label: "Receiving",
+      label: "Received",
     };
   }
 
@@ -90,6 +101,9 @@ export const getProcessingBadgeColor = (status) => {
       selectedColor = "green";
       break;
     case "Assigned":
+      selectedColor = "blue";
+      break;
+    case "In progress":
       selectedColor = "blue";
       break;
     default:
