@@ -16,6 +16,7 @@ import {
   Tooltip,
   HoverCard,
   List,
+  Modal,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import React, { useEffect, useState } from "react";
@@ -39,12 +40,13 @@ import {
   IconFilter2Plus,
   IconChevronsUpRight,
 } from "@tabler/icons-react";
-import { useDebouncedState } from "@mantine/hooks";
+import { useDebouncedState, useDisclosure } from "@mantine/hooks";
 import { FiPaperclip } from "react-icons/fi";
 import { IoPeople } from "react-icons/io5";
 import { GiCheckMark } from "react-icons/gi";
 import { BiSolidCommentDetail } from "react-icons/bi";
 import dayjs from "../../../utilities/hooks/dayjsRelativeTime";
+import Comments from "../../../components/comments/Comments";
 
 const Processing = ({
   data,
@@ -57,6 +59,7 @@ const Processing = ({
   const [selectedAssigneeRows, setSelectedAssigneeRows] = useState([]);
   const [activePage, setActivePage] = useState(1);
   const [searchValue, setSearchValue] = useDebouncedState("", 500);
+  const [opened, { open, close }] = useDisclosure(false);
   const [documentList, setDocumentList] = useState([]);
   const [totalRetrievedRecords, setTotalRetrievedRecords] = useState(1);
   const [addNewProcessingData, { isLoading }] =
@@ -253,6 +256,9 @@ const Processing = ({
                 stroke={1}
                 size={18}
                 className="cursor-pointer text-orange-500 hover:text-orange-600 transition-all duration-300"
+                onClick={() => {
+                  open();
+                }}
               />
               {[
                 "Assigned",
@@ -753,6 +759,18 @@ const Processing = ({
           </Group>
         </section>
       </form>
+      <section>
+        <Modal
+          opened={opened}
+          onClose={close}
+          title="CODE ID"
+          centered
+          size={"60%"}
+          p={10}
+        >
+          <Comments />
+        </Modal>
+      </section>
     </main>
   );
 };

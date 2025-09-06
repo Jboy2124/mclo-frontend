@@ -9,6 +9,7 @@ import authReducer from "./reducer/authReducer";
 import releaseReducer from "./reducer/releasingReducer";
 import userListReducer from "./reducer/usersReducers";
 import receivingReducer from "./reducer/receivingReducer";
+import documentTimelineReducer from "./reducer/timelineDataReducer";
 
 const rootReducer = combineReducers({
   [configApi.reducerPath]: configApi.reducer,
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   releaseReducers: releaseReducer,
   userList: userListReducer,
   receivingReducers: receivingReducer,
+  docTimelineReducer: documentTimelineReducer,
 });
 
 const persistConfig = {

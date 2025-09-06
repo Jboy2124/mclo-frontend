@@ -4,6 +4,7 @@ import {
   Flex,
   Group,
   LoadingOverlay,
+  Modal,
   Pagination,
   ScrollArea,
   Select,
@@ -17,14 +18,16 @@ import dayjs from "../../../utilities/hooks/dayjsRelativeTime";
 import { FiPaperclip } from "react-icons/fi";
 import { transformAttachments } from "../../../utilities/functions/func";
 import { IconSearch, IconFilter2Plus } from "@tabler/icons-react";
-import { useDebouncedState } from "@mantine/hooks";
+import { useDebouncedState, useDisclosure } from "@mantine/hooks";
 import { useUpdateProcessDocumentStatusMutation } from "../../../redux/endpoints/documentsEndpoints";
 import { isNullOrUndefinedOrEmpty } from "../../../utilities/utilities";
 import { BiSolidCommentDetail } from "react-icons/bi";
+import Comments from "../../../components/comments/Comments";
 
 const ProcessingLawyers = ({ documentList, isLoading, refetch }) => {
   const [activePage, setActivePage] = useState(1);
   const [searchValue, setSearchValue] = useDebouncedState("", 500);
+  const [opened, { open, close }] = useDisclosure(false);
 
   const totalRecords = documentList?.totalRecords || 1;
   const pageLimit = 15;
@@ -43,12 +46,12 @@ const ProcessingLawyers = ({ documentList, isLoading, refetch }) => {
     return isValid;
   };
 
-  const handleUpdateProcessStatus = async (status, id) => {
+  const handleUpdateProcessStatus = async (status, id, docId) => {
     try {
       const payload = {
         status,
         processId: id,
-        docId: null,
+        docId: docId,
       };
       const isValid = validatePayload(payload);
       if (isValid) {
@@ -103,6 +106,9 @@ const ProcessingLawyers = ({ documentList, isLoading, refetch }) => {
               stroke={1}
               size={18}
               className="cursor-pointer text-orange-500 hover:text-orange-600 transition-all duration-300"
+              onClick={() => {
+                open();
+              }}
             />
           </Group>
         </div>
@@ -133,7 +139,9 @@ const ProcessingLawyers = ({ documentList, isLoading, refetch }) => {
           value={info.status}
           checkIconPosition="right"
           allowDeselect={false}
-          onChange={(value) => handleUpdateProcessStatus(value, info.processId)}
+          onChange={(value) =>
+            handleUpdateProcessStatus(value, info.processId, info.docId)
+          }
           disabled={info.status === "Approved"}
           comboboxProps={{
             width: 200,
@@ -231,6 +239,18 @@ const ProcessingLawyers = ({ documentList, isLoading, refetch }) => {
             />
           </Group>
         </div>
+      </section>
+      <section>
+        <Modal
+          opened={opened}
+          onClose={close}
+          title="CODE ID"
+          centered
+          size={"60%"}
+          p={10}
+        >
+          <Comments />
+        </Modal>
       </section>
     </main>
   );

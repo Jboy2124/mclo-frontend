@@ -37,7 +37,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { useDebouncedState } from "@mantine/hooks";
 import { openPdfInBrowser } from "../../../utilities/hooks/pdfViewer";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   getCommonCodeFieldValue,
   getDocumentStatus,
@@ -45,7 +45,10 @@ import {
   transformAttachments,
 } from "../../../utilities/functions/func";
 import { TbListDetails, TbListTree } from "react-icons/tb";
-import { useFindDocumentsMutation } from "../../../redux/endpoints/documentsEndpoints";
+import {
+  useFindDocumentsMutation,
+  useGetDocumentTimelineQuery,
+} from "../../../redux/endpoints/documentsEndpoints";
 import {
   IconDots,
   IconEdit,
@@ -58,13 +61,18 @@ import {
 } from "@tabler/icons-react";
 import { FiPaperclip } from "react-icons/fi";
 import dayjs from "../../../utilities/hooks/dayjsRelativeTime";
+import { setDocumentTimeline } from "../../../redux/reducer/timelineDataReducer";
 
 const DashForm = ({ data, loading }) => {
+  const dispatch = useDispatch();
   const natureOfComms = useSelector(
     (state) => state.commonCodes.natureOfCommunication
   );
   const userList = useSelector((state) => state.userList.userProfile);
   const titles = useSelector((state) => state.commonCodes.titles);
+  const timelineData = useSelector(
+    (state) => state?.docTimelineReducer?.timeline
+  );
 
   const receivedThru = useSelector((state) => state.commonCodes.receivedThru);
   const [expandedCards, setExpandedCards] = useState({});
@@ -77,17 +85,24 @@ const DashForm = ({ data, loading }) => {
   const [searchTotalpage, setSearchTotalPages] = useState(1);
   const [viewFilterBtn, setViewFilterBtn] = useState(true);
   const [selectedMenu, setSelectedMenu] = useState({ type: null, code: null });
+  const [timelineDocId, setTimelineDocId] = useState(null);
 
   const [findDocuments, { isLoading }] = useFindDocumentsMutation();
+  const {
+    data: timelineInformation = [],
+    isLoading: isLoadingTimeline,
+    isFetching,
+  } = useGetDocumentTimelineQuery({ docId: timelineDocId });
 
   const pageLimit = 15;
   const totalPages = Math.ceil(searchTotalpage / pageLimit);
 
   const getBadgeColor = (status) => {
-    const relStatus = ["For releasing", "Released", "Approved", "Assigned"];
+    const relStatus = ["Approved", "Assigned"];
     const openTicketStatus = ["Open", "Received"];
     const inProg = ["In progress", "Received"];
-    const pendingStat = ["Pending approval"];
+    const pendingStat = ["Pending approval", "For releasing"];
+    const releasedStatus = ["Released"];
 
     if (relStatus.includes(status)) {
       return { color: "blue", status: status };
@@ -103,6 +118,10 @@ const DashForm = ({ data, loading }) => {
 
     if (openTicketStatus.includes(status)) {
       return { color: "orange", status: status };
+    }
+
+    if (releasedStatus.includes(status)) {
+      return { color: "red", status: status };
     }
 
     return { color: "red", status: "Unknown" };
@@ -121,8 +140,8 @@ const DashForm = ({ data, loading }) => {
       .filter((u) => arr.includes(u.userId))
       .map((u) => (
         <Group gap={0.5}>
-          <IconChevronsUpRight stroke={1} size={16} />
-          <Text fz={15} fw={500} key={u.userId}>
+          <IconChevronsUpRight stroke={1} size={13} />
+          <Text fz={13} fw={500} key={u.userId}>
             {getFullname(u, titles)}
           </Text>
         </Group>
@@ -134,10 +153,14 @@ const DashForm = ({ data, loading }) => {
     return userList
       .filter((u) => arr.includes(u.userId))
       .map((u) => (
-        <Text fz={12} fw={300} key={u.userId}>
+        <Text fz={12} fw={400} key={u.userId}>
           {`Document was received by ${getFullname(u, titles)}`}
         </Text>
       ));
+  };
+
+  const getDocumentDetails = (selectedCode) => {
+    return <Text>{`Details here ${selectedCode}`}</Text>;
   };
 
   const getDataTimeline = (selectedCode) => {
@@ -145,7 +168,6 @@ const DashForm = ({ data, loading }) => {
     const selectedData = data?.result?.filter(
       (data) => data.code_id === selectedCode
     );
-
     const processStatuses = [
       "Assigned",
       "In progress",
@@ -155,13 +177,19 @@ const DashForm = ({ data, loading }) => {
 
     const initialStat = ["Open", "Received"];
 
-    const forReleasingStatuses = ["For releasing", "Released"];
+    const forReleasingStatuses = ["For releasing"];
+    const releasedStatuses = ["Released"];
 
     const receivingData = selectedData[0]?.receiving;
     const processingData = selectedData[0]?.processing;
     const releasingData = selectedData[0]?.releasing;
 
     if (
+      releasingData &&
+      releasedStatuses.includes(releasingData?.releaseStatus)
+    ) {
+      activeBranch = 4;
+    } else if (
       releasingData &&
       forReleasingStatuses.includes(releasingData?.releaseStatus)
     ) {
@@ -181,18 +209,22 @@ const DashForm = ({ data, loading }) => {
       return (
         <Timeline
           active={activeBranch}
-          bulletSize={18}
+          bulletSize={15}
           lineWidth={1}
-          pl={30}
+          pl={10}
           color="#0e3557"
         >
           <Timeline.Item
             bullet={activeBranch >= 1 ? () => {} : null}
-            title="Document Received"
+            title={
+              <Text fz={14} fw={500}>
+                Document received
+              </Text>
+            }
             c={activeBranch >= 1 ? "#0e3557" : "gray"}
           >
-            <div className="pb-3">
-              <Text c={activeBranch >= 1 ? "#0e3557" : "gray"} size="sm" pb={3}>
+            <div>
+              <Text c={activeBranch >= 1 ? "#0e3557" : "gray"} fz={12} fw={400}>
                 {`New "${getCommonCodeFieldValue(
                   natureOfComms,
                   receivingData.natureOfComm
@@ -201,11 +233,11 @@ const DashForm = ({ data, loading }) => {
                   receivingData.receivedThru
                 )} and forwarded by/from ${receivingData?.forwardedBy || ""}.`}
               </Text>
-              {transformReceiver("MCLO20250001")}
+              {transformReceiver(receivingData.receivingPersonnel)}
               <Text
-                size="xs"
-                mt={4}
-                pt={5}
+                fz={12}
+                fw={400}
+                fs="italic"
                 c={activeBranch >= 1 ? "#0e3557" : "gray"}
               >
                 {`${dayjs(
@@ -213,67 +245,90 @@ const DashForm = ({ data, loading }) => {
                     receivingData.receivedTime
                   }`,
                   "YYYY-MM-DD HH:mm:ss"
-                ).fromNow()}`}
+                ).fromNow()}...`}
               </Text>
             </div>
           </Timeline.Item>
           <Timeline.Item
             bullet={activeBranch >= 2 ? () => {} : null}
-            title={`Document ${processingData.processStatus}`}
+            title={
+              <Text
+                fz={14}
+                fw={500}
+              >{`Document ${processingData.processStatus?.toLowerCase()}`}</Text>
+            }
             c={activeBranch >= 2 ? "#0e3557" : "gray"}
           >
             {activeBranch >= 2 && (
-              <div className="pb-3">
-                <Text c="#0e3557" size="xs" mb={10} pb={10}>
-                  This document has been assigned to the following Lawyers or
+              <div>
+                <Text c="#0e3557" fz={12} fw={400} pb={10}>
+                  This document has been assigned to the following lawyers or
                   personnel:
                 </Text>
                 {transformAssignee(processingData?.assignedTo)}
-                <Text size="xs" mt={4} c="#0e3557" pt={10}>
-                  {dayjs(
-                    `${processingData.dateAssigned}`,
-                    "YYYY-MM-DD HH:mm:ss"
-                  ).fromNow()}
-                </Text>
+                {timelineInformation?.result?.map((itm, index) => {
+                  return (
+                    <Flex direction="row" pt={10} gap="xs">
+                      <Text fz={12} fw={400}>
+                        {`"${itm.status}"`}
+                      </Text>
+                      <Text fz={12} fw={400} fs="italic">
+                        {`${dayjs(
+                          `${itm.dateUpdated}`,
+                          "YYYY-MM-DD HH:mm:ss"
+                        ).fromNow()}...`}
+                      </Text>
+                    </Flex>
+                  );
+                })}
               </div>
             )}
           </Timeline.Item>
           <Timeline.Item
-            title={`Document ${releasingData.releaseStatus}`}
+            title={
+              <Text
+                fz={14}
+                fw={500}
+              >{`Document ${releasingData.releaseStatus?.toLowerCase()}`}</Text>
+            }
             bullet={activeBranch >= 3 ? () => {} : null}
             lineVariant="dashed"
             c={activeBranch >= 3 ? "#0e3557" : "gray"}
           >
             {activeBranch >= 3 && (
-              <div className="pb-3">
-                <Text c="#0e3557" size="xs" mb={10} pb={10}>
-                  The document is now approved ready for release.
+              <div>
+                <Text c="#0e3557" fz={12} fw={400}>
+                  The document is now approved and ready for release.
                 </Text>
-                <Text size="xs" mt={4} c="yellow">
-                  <Text size="xs" mt={4} c="#0e3557" pt={10}>
-                    {dayjs(
-                      `${releasingData?.releasedDate}`,
-                      "YYYY-MM-DD HH:mm:ss"
-                    ).fromNow()}
-                  </Text>
+                <Text size="xs" c="#0e3557" fs="italic">
+                  {`${dayjs(
+                    `${releasingData?.releasedDate}`,
+                    "YYYY-MM-DD HH:mm:ss"
+                  ).fromNow()}...`}
                 </Text>
               </div>
             )}
           </Timeline.Item>
           <Timeline.Item
-            title="Completed"
-            c={releasingData?.status === "Released" ? "white" : "gray"}
+            title={
+              <Text fz={14} fw={500}>
+                Complete
+              </Text>
+            }
+            bullet={activeBranch >= 4 ? () => {} : null}
+            c={activeBranch >= 4 ? "#0e3557" : "gray"}
           >
-            {releasingData?.status === "Released" && (
-              <div className="pb-3">
-                <Text c="white" size="sm">
-                  <Text variant="link" component="span" inherit>
-                    Robert Gluesticker
-                  </Text>
-                  left a code review on your pull request
+            {activeBranch >= 4 && (
+              <div>
+                <Text c="#0e3557" fz={12} fw={400}>
+                  The document has been successfully completed, considered
+                  closed, and requires no further action.
                 </Text>
-                <Text size="xs" mt={4} c="yellow">
-                  12 minutes ago
+                <Text size="xs" c="#0e3557" fs="italic">
+                  {`${dayjs(
+                    `${releasingData?.actualReleasedDate}`,
+                    "YYYY-MM-DD HH:mm:ss"
+                  ).fromNow()}...`}
                 </Text>
               </div>
             )}
@@ -366,7 +421,7 @@ const DashForm = ({ data, loading }) => {
             <Menu.Item
               leftSection={<IconListTree size={20} stroke={1} />}
               onClick={() => {
-                console.log("code ", itm.code_id);
+                setTimelineDocId(itm.docId);
                 setSelectedMenu({ type: "timeline", code: itm.code_id });
                 open();
               }}
@@ -556,7 +611,9 @@ const DashForm = ({ data, loading }) => {
           centered
         >
           <section className="bg-gray-400 p-10 rounded">
-            {selectedMenu?.type === "details" && <>{"Details here"}</>}
+            {selectedMenu?.type === "details" && (
+              <>{getDocumentDetails(selectedMenu.code)}</>
+            )}
             {selectedMenu?.type === "timeline" && (
               <>{getDataTimeline(selectedMenu.code)}</>
             )}
