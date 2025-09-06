@@ -8,7 +8,7 @@ export function openPdfInBrowser(filePath) {
     return;
   }
 
-  const pdfUrl = `http://localhost:8080/api/documents/v1/view-pdf?file=${encodeURIComponent(
+  const pdfUrl = `http://192.168.1.14:8080/api/documents/v1/view-pdf?file=${encodeURIComponent(
     filePath
   )}`;
   window.open(pdfUrl, "_blank", "noopener,noreferrer");
