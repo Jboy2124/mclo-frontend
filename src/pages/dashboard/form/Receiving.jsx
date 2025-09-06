@@ -448,26 +448,12 @@ const Receiving = () => {
                   />
                 </div>
                 <div className="w-full pb-5">
-                  <TextInput
-                    labelProps={{ fw: 300 }}
-                    description="Sample"
-                    placeholder=""
-                    withAsterisk
-                    readOnly
-                    value={receivingData?.natureOfComm}
-                    styles={{
-                      input: {
-                        borderColor: "#0e3557",
-                      },
-                    }}
-                  />
-                </div>
-                <div className="w-full pb-5">
                   <Select
                     description="Nature of communication"
                     placeholder="Select"
                     clearable
                     checkIconPosition="left"
+                    allowDeselect={false}
                     data={[
                       ...natureCommCodes.map((item) => ({
                         label: item.value,
@@ -489,7 +475,7 @@ const Receiving = () => {
                     description="Received through"
                     placeholder="Select"
                     clearable
-                    checkIconPosition="left"
+                    allowDeselect={false}
                     data={[
                       ...receivedThruCodes.map((item) => ({
                         label: item.value,

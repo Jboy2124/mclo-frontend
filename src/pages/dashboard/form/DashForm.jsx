@@ -84,13 +84,28 @@ const DashForm = ({ data, loading }) => {
   const totalPages = Math.ceil(searchTotalpage / pageLimit);
 
   const getBadgeColor = (status) => {
-    if (status === "Receiving") {
-      return { color: "yellow", status: "Received" };
-    } else if (status === "Processing") {
-      return { color: "red", status: "Processed" };
+    const relStatus = ["For releasing", "Released", "Approved", "Assigned"];
+    const openTicketStatus = ["Open", "Received"];
+    const inProg = ["In progress", "Received"];
+    const pendingStat = ["Pending approval"];
+
+    if (relStatus.includes(status)) {
+      return { color: "blue", status: status };
     }
 
-    return { color: "blue", status: "Released" };
+    if (pendingStat.includes(status)) {
+      return { color: "green", status: status };
+    }
+
+    if (inProg.includes(status)) {
+      return { color: "yellow", status: status };
+    }
+
+    if (openTicketStatus.includes(status)) {
+      return { color: "orange", status: status };
+    }
+
+    return { color: "red", status: "Unknown" };
   };
 
   const getAssignee = (assignee) => {
@@ -131,18 +146,32 @@ const DashForm = ({ data, loading }) => {
       (data) => data.code_id === selectedCode
     );
 
+    const processStatuses = [
+      "Assigned",
+      "In progress",
+      "Pending approval",
+      "Approved",
+    ];
+
+    const initialStat = ["Open", "Received"];
+
+    const forReleasingStatuses = ["For releasing", "Released"];
+
     const receivingData = selectedData[0]?.receiving;
     const processingData = selectedData[0]?.processing;
     const releasingData = selectedData[0]?.releasing;
 
-    if (processingData && processingData.processStatus === "Assigned") {
-    }
-
-    if (releasingData && releasingData?.status === "For releasing") {
+    if (
+      releasingData &&
+      forReleasingStatuses.includes(releasingData?.releaseStatus)
+    ) {
       activeBranch = 3;
-    } else if (processingData && processingData.processStatus === "Assigned") {
+    } else if (
+      processingData &&
+      processStatuses.includes(processingData.processStatus)
+    ) {
       activeBranch = 2;
-    } else if (receivingData && receivingData.status === "Received") {
+    } else if (receivingData && initialStat.includes(receivingData.status)) {
       activeBranch = 1;
     } else {
       activeBranch = 0;
@@ -210,21 +239,23 @@ const DashForm = ({ data, loading }) => {
             )}
           </Timeline.Item>
           <Timeline.Item
-            title="Document for Release"
+            title={`Document ${releasingData.releaseStatus}`}
             bullet={activeBranch >= 3 ? () => {} : null}
             lineVariant="dashed"
-            c={activeBranch >= 3 ? "white" : "gray"}
+            c={activeBranch >= 3 ? "#0e3557" : "gray"}
           >
             {activeBranch >= 3 && (
               <div className="pb-3">
-                <Text c="white" size="sm">
-                  You have submitted a pull request
-                  <Text variant="link" component="span" inherit>
-                    Fix incorrect notification message (#187)
-                  </Text>
+                <Text c="#0e3557" size="xs" mb={10} pb={10}>
+                  The document is now approved ready for release.
                 </Text>
                 <Text size="xs" mt={4} c="yellow">
-                  34 minutes ago
+                  <Text size="xs" mt={4} c="#0e3557" pt={10}>
+                    {dayjs(
+                      `${releasingData?.releasedDate}`,
+                      "YYYY-MM-DD HH:mm:ss"
+                    ).fromNow()}
+                  </Text>
                 </Text>
               </div>
             )}
@@ -267,7 +298,7 @@ const DashForm = ({ data, loading }) => {
     );
     const attachedFile = transformAttachments(itm.attachments);
     return [
-      <Text fz={15} fw={300} py={20}>
+      <Text fz={14} fw={300} py={20}>
         {itm.code_id}
       </Text>,
       <Flex direction="column" gap={15}>
@@ -278,7 +309,7 @@ const DashForm = ({ data, loading }) => {
           styles={{
             control: {
               fontSize: "12px", // smaller font
-              color: "blue", // optional custom color
+              color: "#3396D3", // optional custom color
             },
           }}
         >
@@ -297,10 +328,11 @@ const DashForm = ({ data, loading }) => {
             getDocumentStatus(documentsData?.result || [], itm.code_id)?.label
           ).color
         }
-        fw={300}
-        fz={10}
         size="sm"
-        miw={80}
+        miw={100}
+        fw={300}
+        fz={8}
+        variant="filled"
       >
         {
           handleGetDocumentStatus(
@@ -308,8 +340,12 @@ const DashForm = ({ data, loading }) => {
           ).status
         }
       </Badge>,
-      formattedDate,
-      formattedTime,
+      <Text fz={13} fw={300}>
+        {formattedDate}
+      </Text>,
+      <Text fz={13} fw={300}>
+        {formattedTime}
+      </Text>,
       <Flex direction={"row"} gap={5}>
         <Menu shadow="lg" width={200}>
           <Menu.Target>

@@ -65,7 +65,6 @@ const documents = configApi.injectEndpoints({
         url: "/api/documents/v1/for-releasing-documents",
         method: "GET",
         params: {
-          user: userId,
           page: activePage,
         },
       }),
@@ -88,6 +87,13 @@ const documents = configApi.injectEndpoints({
       }),
       providesTags: ["ASSIGNED_DOCUMENTS"],
     }),
+    updateProcessDocumentStatus: builder.mutation({
+      query: (data) => ({
+        url: "/api/documents/v1/update-process-status",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -104,4 +110,5 @@ export const {
   useGetForReleasingDocumentsQuery,
   useAddNewReleasedDocumentMutation,
   useGetAssignedDocumentsQuery,
+  useUpdateProcessDocumentStatusMutation,
 } = documents;
